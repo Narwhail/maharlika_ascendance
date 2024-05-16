@@ -10,7 +10,7 @@
     char_size dw 0fh
     char_x dw 0088h
     char_y dw 0098h
-    char_velocity dw 0010h
+    char_velocity dw 0008h
     char_xfixedpos dw 01h
     y_toplimit dw 18h
     y_bottomlimit dw 098h
