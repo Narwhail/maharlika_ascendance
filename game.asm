@@ -190,10 +190,11 @@ org 0100h
         jmp exit_input
 
         w_pressed:
-            mov ax, y_toplimit
+            mov ax, y_toplimit      ;check if character y position has reached top_limit
             cmp char_y, ax
-            je exit_input
+            je exit_input           ;if true then exit
 
+            ;else
             mov ax, char_velocity
             sub char_y, ax
             jmp exit_input
@@ -208,10 +209,11 @@ org 0100h
             jmp exit_input
 
         s_pressed:
-            mov ax, y_bottomlimit
+            mov ax, y_bottomlimit   ;check if character y position has reached bottom_limit
             cmp char_y, ax 
-            je exit_input
+            je exit_input           ;if true then exit
 
+            ;else
             mov ax, char_velocity
             add char_y, ax
             jmp exit_input
@@ -228,7 +230,7 @@ org 0100h
             ret
     game_input endp
 
-    update_xposition proc near
+    update_xposition proc near      ;this is responsible for updating the values for adding in char_x, depending on the char_xfixedpos
         mov ax, char_xfixedpos
 
         ;check if 1
