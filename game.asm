@@ -179,7 +179,7 @@ org 0100h
     generateseed endp
 
     delay proc near
-        mov cx, 1
+        mov cx, 5
         mov dx, 0e848h
         mov ah, 86h
         int 15h
@@ -290,6 +290,7 @@ org 0100h
 
         ;if collission is true
         mov game_state, 02h         ;set game state to gameover
+        call delay
         ret
 
         ;if false
