@@ -9,19 +9,20 @@ main proc far
     mov ax, @data
     mov ds, ax
 
-    call rng
+    reloop:
+        call rng
 
-    mov ah, 09h
-    mov dx, offset outputMsg
-    int 21h
+        mov ah, 09h
+        mov dx, offset outputMsg
+        int 21h
 
-    mov ah, 02h
-    mov dl, randomNum
-    add dl, '0'
-    int 21h
+        mov ah, 02h
+        mov dl, randomNum
+        add dl, '0'
+        int 21h
 
-    mov ah, 4ch
-    int 21h
+        mov ah, 4ch
+        int 21h
 main endp
 
 rng proc near
@@ -30,7 +31,7 @@ rng proc near
 
     mov ax, dx
     mov dx, 00h
-    mov bx, 04h
+    mov bx, 05h
     div bx
 
     mov randomNum, dl

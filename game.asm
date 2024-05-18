@@ -13,15 +13,14 @@
     line2_over db "Score: ", "$"
     line3_over db "Press any key to return to menu", "$"
 
-
-    
-    
     ;game variables
     current_tick db 00h
     y_toplimit dw 18h
     y_bottomlimit dw 098h
-    y_velocity dw 0004h         ;this is used for obstacles, and tower y movement
+    y_velocity dw 0008h         ;this is used for obstacles, and tower y movement
     game_state dw 0001h         ;0 = title screen, 1 = playing, 2 = game over
+    randomNum db 01h
+    rngseed dw 00h
     
     ;character variables
     char_size dw 0fh
@@ -37,9 +36,10 @@
     tower_xsize dw 1fh
     tower_ysize dw 0afh
 
-    ;obstacle       fixed positions = 0087h, 00b7h, 00dfh, 010fh
+    ;obstacle
     obstacle_xpos dw 00b7h
     obstacle_ypos dw 0008h
+    obsfixedxpos_state dw 00h       ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
     
     
 
@@ -57,6 +57,7 @@ org 0100h
             mov ah, 2ch
             int 21h
 
+
             cmp dl, current_tick
             je playing_game
 
@@ -73,8 +74,7 @@ org 0100h
             mov bx, tower_x2
             call draw_tower
 
-            
-
+    
             call draw_obstacle
             call move_obstacle
             call draw_char
@@ -89,12 +89,110 @@ org 0100h
 
         game_over:
             call gameover_printtext     
+            call generateseed
             call gameover_input         ;check for input
     main endp
 
+    obstaclexfixed_updateval proc near
+        mov al, randomNum
+
+
+        ;randomNum = 1
+        cmp al, 01
+        je obs1_position1
+        
+        ;randomNum = 2
+        cmp al, 02
+        je obs1_position2
+
+        ;randomNum = 3
+        cmp al, 03
+        je obs1_position3
+
+        ;randomNum = 4
+        cmp al, 04
+        je obs1_position4
+
+        ret                 ;exit if none
+
+        obs1_position1:
+            mov obstacle_xpos, 0087h
+            ret
+        obs1_position2:
+            mov obstacle_xpos, 00b7h
+            ret
+
+        obs1_position3:
+            mov obstacle_xpos, 00dfh
+            ret
+
+        obs1_position4:
+            mov obstacle_xpos, 010fh
+            ret
+
+        obs1_exit_xupdate:
+            ret
+    obstaclexfixed_updateval endp
+
+    prng proc          ;generates a number (0 to 3)
+
+        cmp rngseed, 0
+        jne gamba
+
+        call generateseed
+        jmp gamba
+
+        gamba:
+        mov ax, rngseed
+        
+        xor dx, dx
+        mov bx, 04h
+        div bx
+        inc dl
+
+        mov randomNum, dl
+        ret
+
+    prng endp
+
+    nurng proc
+        mov ax, rngseed       ; Load the current seed into AX
+        mov bx, 0A9h       ; Multiplier (a = 169)
+        mul bx             ; AX = AX * BX
+        add ax, 1          ; Increment (c = 1)
+        mov rngseed, ax       ; Update the seed with the new value
+        
+        ; Now AX contains the new seed
+        xor dx, dx         ; Clear DX for division
+        mov bx, 5          ; Set divisor to 5
+        div bx             ; Divide AX by BX, quotient in AL, remainder in DL
+        inc dl
+        mov randomNum, dl  ; Move the remainder (0-4) to randomNum
+        ret                ; Return from procedure
+    nurng endp
+
+    generateseed proc near
+        mov ah, 00h
+        int 1ah
+        mov rngseed, dx
+        ret
+    generateseed endp
+
+    delay proc near
+        mov cx, 1
+        mov dx, 0e848h
+        mov ah, 86h
+        int 15h
+        ret
+    delay endp
+
     default_gamevalue proc near
+        mov rngseed, 0
+        mov randomNum, 02h              
+        call obstaclexfixed_updateval
         mov char_xfixedpos, 01h
         mov char_y, 0098h
+        mov obstacle_ypos, 0008h
         ret
     default_gamevalue endp 
 
@@ -107,6 +205,8 @@ org 0100h
         gameover_keypress:
             mov game_state, 01h
             call default_gamevalue
+            call prng
+            call obstaclexfixed_updateval
             jmp playing_game
     gameover_input endp
 
@@ -154,6 +254,9 @@ org 0100h
 
         ;else
         mov obstacle_ypos, 0008h        ;reset back to top
+
+        call nurng
+        call obstaclexfixed_updateval
         ret
 
         exit_moveobs:
