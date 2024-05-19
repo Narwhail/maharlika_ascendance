@@ -21,6 +21,9 @@
     game_state dw 0001h         ;0 = title screen, 1 = playing, 2 = game over
     randomNum db 01h
     rngseed dw 00h
+    score_ones db 0
+    score_tens db 0
+    score_hund db 0
     
     ;character variables
     char_size dw 0fh
