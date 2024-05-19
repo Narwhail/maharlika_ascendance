@@ -1,2 +1,3 @@
-machine=svga_et4000
+### DosBox options
+machine=svga_et4000 <br>
 cycles=max
