@@ -82,7 +82,6 @@ org 0100h
             call move_obstacle
             call draw_char
             call playinggame_printtext
-            ;call playinggame_printscore
             call playinggame_input
             call check_collission
 
@@ -91,6 +90,7 @@ org 0100h
             jmp game_over               ;else
 
         game_over:
+            call clear_screen
             call gameover_printtext     
             call generateseed
             call gameover_input         ;check for input
@@ -160,7 +160,7 @@ org 0100h
 
     nurng proc
         mov ax, rngseed       ; Load the current seed into AX
-        mov bx, 0A9h       ; Multiplier (a = 169)
+        mov bx, 0A9h
         mul bx             ; AX = AX * BX
         add ax, 1          ; Increment (c = 1)
         mov rngseed, ax       ; Update the seed with the new value
@@ -196,6 +196,9 @@ org 0100h
         mov char_xfixedpos, 01h
         mov char_y, 0098h
         mov obstacle_ypos, 0008h
+        mov score_ones, 0
+        mov score_hund, 0
+        mov score_tens, 0
         ret
     default_gamevalue endp 
 
@@ -213,9 +216,7 @@ org 0100h
             jmp playing_game
     gameover_input endp
 
-    gameover_printtext proc near
-        call clear_screen
-
+    gameover_printtext proc near        
         mov ah, 02h
         mov bh, 00h         ;page position
         mov dh, 04h         ;y position of text -> 1 hexadecimal is equivalent to 8 pixels
@@ -233,6 +234,11 @@ org 0100h
         mov ah, 09h
         mov dx, offset line2_over
         int 21h
+
+        mov ah, 02h
+        mov dh, 07h
+        mov dl, 04h
+        call _printscore
 
         mov ah, 02h
         mov bh, 00h         ;page position
@@ -260,6 +266,8 @@ org 0100h
 
         call nurng
         call obstaclexfixed_updateval
+        ; Call increment_score here
+        call increment_score
         ret
 
         exit_moveobs:
@@ -299,7 +307,6 @@ org 0100h
         ;if false
         exit_collission:
             ret
-
     check_collission endp
 
     draw_obstacle proc near
@@ -423,13 +430,70 @@ org 0100h
         mov ah, 09h
         mov dx, offset line5_game       ;score
         int 21h
+
+        mov ah, 02h
+        mov dh, 0eh
+        mov dl, 02h
+        call _printscore
         ret
     playinggame_printtext endp
 
-    playinggame_printscore proc near           ;incomplete
-        
+    increment_score proc near
+        inc score_ones
+    	cmp score_ones, 10
+   	    jl exit_increment
+
+    	mov score_ones, 0
+    	inc score_tens
+    	cmp score_tens, 10
+    	jl exit_increment
+
+    	mov score_tens, 0
+    	inc score_hund
+    	cmp score_hund, 10
+    	jl exit_increment
+
+    	mov score_hund, 0
+    
+    	exit_increment:
         ret
-    playinggame_printscore endp
+    increment_score endp
+
+    _printscore proc near    ;dl - x position
+        ; the string 'Score: ' occupies 7 squares incl. whitespace
+        add dl, 7       ;set x pos 7 squares apart from previous' text initial letter
+        int 10h
+
+        ; Print hundreds digit
+    	push dx
+        mov dl, score_hund
+    	add dl, '0'
+    	int 21h
+        pop dx
+
+    	inc dl              ; move to next square
+   	    int 10h
+        
+        ; print tens digit
+    	push dx
+        mov dl, score_tens
+    	add dl, '0'
+    	int 21h
+        pop dx
+
+    	inc dl              ; move to next position
+    	int 10h
+
+        ; Print ones digit
+    	push dx
+        mov dl, score_ones
+    	add dl, '0'
+    	int 21h
+        pop dx
+
+        ret
+    _printscore endp
+
            
     playinggame_input proc near
         mov ah, 01h             ;if no key is pressed, exit playinggame_input
