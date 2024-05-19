@@ -1,1 +1,2 @@
-
+machine=svga_et4000
+cycles=max
