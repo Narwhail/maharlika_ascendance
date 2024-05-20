@@ -1,3 +1,6 @@
+;resolve illegal read from gameover_printtext
+;resolve illegal write from ???
+
 .model small
 .stack
 .data
@@ -16,15 +19,16 @@
     ;game variables
     current_tick db 00h
     y_toplimit dw 18h
-    y_bottomlimit dw 098h
-    y_velocity dw 0008h         ;this is used for obstacles, and tower y movement
-    game_state dw 0001h         ;0 = title screen, 1 = playing, 2 = game over
+    y_bottomlimit dw 00a8h
+    y_velocity dw 4             ;this is used for obstacles, and tower y movement
+    game_state dw 0001h         ;0 = title screen, 1 = ingame, 2 = game over
     randomNum db 01h
     rngseed dw 00h
     score_ones db 0
     score_tens db 0
     score_hund db 0
-    
+    score_rate db 1
+     
     ;character variables
     char_size dw 0fh
     char_x dw 0088h
@@ -42,10 +46,11 @@
     ;obstacle
     obstacle_xpos dw 00b7h
     obstacle_ypos dw 0008h
-    obsfixedxpos_state dw 00h       ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
-    
-    
-
+    obsfixedxpos_state dw 00h                           ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
+    obs_xpos dw 00b7h, 00b7h, 00b7h, 00b7h, 00b7h       ;address is by 2 ie. 0,2,4,6,8
+    obs_ypos dw 24, 56, 88, 120, 152                    ;address is by 2 ie. 0,2,4,6,8
+    obs_isactive db 1, 0, 0, 0, 0                       ;0 = inactive, 1 = active
+    obs_difficulty db 0                                 ;0 = easy, 1 = intermediate, 2 = hard
 .code
 
 org 0100h
@@ -54,6 +59,8 @@ org 0100h
         mov ax, @data
         mov ds, ax
 
+        call generateseed
+        call default_gamevalue
         call clear_screen
 
         playing_game:
@@ -66,8 +73,7 @@ org 0100h
 
             mov current_tick, dl        ;update game tick
             
-
-            
+            call update_difficulty
             call update_xposition
             call clear_screen
 
@@ -80,6 +86,7 @@ org 0100h
     
             call draw_obstacle
             call move_obstacle
+
             call draw_char
             call playinggame_printtext
             call playinggame_input
@@ -91,10 +98,33 @@ org 0100h
 
         game_over:
             call clear_screen
-            call gameover_printtext     
+            call gameover_printtext     ;illegal read when gameover
             call generateseed
             call gameover_input         ;check for input
     main endp
+
+    update_difficulty proc near 
+        mov si, 0
+        cmp score_tens, 1
+        je begin
+        jmp exit_updatedif
+
+        begin:
+            mov cx, 5                   ; Loop counter for 5 iterations
+            mov y_velocity, 8
+            
+        update_loop:
+            cmp obs_ypos[si], 8 ; Compare obs_ypos[si] with 8
+            jne skip_update
+            mov obs_isactive[si], 1 ; Set obs_isactive[si] to 1
+
+        skip_update:
+            add si, 2                   ; Move to the next pair of positions (si+2)
+            loop update_loop            ; Loop until CX decrements to 0
+
+        exit_updatedif:
+            ret
+    update_difficulty endp
 
     obstaclexfixed_updateval proc near
         mov al, randomNum
@@ -119,18 +149,19 @@ org 0100h
         ret                 ;exit if none
 
         obs1_position1:
-            mov obstacle_xpos, 0087h
+            mov obs_xpos[si], 0087h
             ret
+
         obs1_position2:
-            mov obstacle_xpos, 00b7h
+            mov obs_xpos[si], 00b7h
             ret
 
         obs1_position3:
-            mov obstacle_xpos, 00dfh
+            mov obs_xpos[si], 00dfh
             ret
 
         obs1_position4:
-            mov obstacle_xpos, 010fh
+            mov obs_xpos[si], 010fh
             ret
 
         obs1_exit_xupdate:
@@ -146,14 +177,14 @@ org 0100h
         jmp gamba
 
         gamba:
-        mov ax, rngseed
-        
-        xor dx, dx
-        mov bx, 04h
-        div bx
-        inc dl
+            mov ax, rngseed
+            
+            xor dx, dx
+            mov bx, 04h
+            div bx
+            inc dl
 
-        mov randomNum, dl
+            mov randomNum, dl
         ret
 
     prng endp
@@ -175,7 +206,7 @@ org 0100h
     nurng endp
 
     generateseed proc near
-        mov ah, 00h
+        mov ah, 00h                 ;get system time
         int 1ah
         mov rngseed, dx
         ret
@@ -190,15 +221,26 @@ org 0100h
     delay endp
 
     default_gamevalue proc near
+        mov si, 0
+        mov obs_ypos[si+0], 24
+        mov obs_ypos[si+2], 56
+        mov obs_ypos[si+4], 88
+        mov obs_ypos[si+6], 120
+        mov obs_ypos[si+8], 152
+        mov obs_isactive[si+0], 1
+        mov obs_isactive[si+2], 0
+        mov obs_isactive[si+4], 0
+        mov obs_isactive[si+6], 0
+        mov obs_isactive[si+8], 0
         mov rngseed, 0
         mov randomNum, 02h              
         call obstaclexfixed_updateval
         mov char_xfixedpos, 01h
         mov char_y, 0098h
-        mov obstacle_ypos, 0008h
         mov score_ones, 0
         mov score_hund, 0
         mov score_tens, 0
+        mov y_velocity, 4
         ret
     default_gamevalue endp 
 
@@ -251,89 +293,118 @@ org 0100h
         ret
     gameover_printtext endp
 
-    move_obstacle proc near
-        mov ax, y_velocity  
-        add obstacle_ypos, ax           ;obstacle_ypos += y_velocity
-
-        mov ax, y_bottomlimit
-        add ax, 10h                     ;add bottom limit by 16 pixels
-
-        cmp obstacle_ypos, ax           ;compare it to bottom limit
-        jl exit_moveobs                 ;if its less
-
-        ;else
-        mov obstacle_ypos, 0008h        ;reset back to top
-
-        call nurng
-        call obstaclexfixed_updateval
-        ; Call increment_score here
-        call increment_score
-        ret
-
-        exit_moveobs:
-            ret
-    move_obstacle endp
-
     check_collission proc near
         ;check if char is colliding with obstacle
         ;char_x+char_size > obstacle_xpos && char_x < obstacle_xpos+char_size 
         ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
+        mov cx, 5
+        mov si, 0
 
-        mov ax, char_x
-        add ax, char_size
-        cmp ax, obstacle_xpos
-        jng exit_collission
+        collissionloop:
+            cmp obs_isactive[si], 0
+            je exit_collission
+            
+            mov ax, char_x
+            add ax, char_size
+            cmp ax, obs_xpos[si]
+            jng exit_collission
 
-        mov ax, obstacle_xpos
-        add ax, char_size
-        cmp char_x, ax
-        jnl exit_collission
+            mov ax, obs_xpos[si]
+            add ax, char_size
+            cmp char_x, ax
+            jnl exit_collission
 
-        mov ax, char_y
-        add ax, char_size
-        cmp ax, obstacle_ypos
-        jng exit_collission
+            mov ax, char_y
+            add ax, char_size
+            cmp ax, obs_ypos[si]
+            jng exit_collission
 
-        mov ax, obstacle_ypos
-        add ax, char_size
-        cmp char_y, ax
-        jnl exit_collission
+            mov ax, obs_ypos[si]
+            add ax, char_size
+            cmp char_y, ax
+            jnl exit_collission
 
-        ;if collission is true
-        mov game_state, 02h         ;set game state to gameover
-        call delay
+            ;if collission is true
+            mov game_state, 2         ;set game state to gameover
+            call delay
         ret
 
         ;if false
         exit_collission:
+            add si, 2
+            loop collissionloop
             ret
     check_collission endp
 
+    move_obstacle proc near
+        ;array addresses: 0, 2, 4, 6, 8
+        mov si, 0                                   ;obs_xpos[0]
+        mov cx, 5                                   ;set loop to 5
+
+        loophere:
+            mov ax, y_velocity
+            add obs_ypos[si], ax                    ;obs_ypos[si] += y_velocity
+
+            mov ax, y_bottomlimit
+            cmp obs_ypos[si], ax                    ;compare obx_ypos[si] to bottom limit
+            jg returntop_obstacle                   ;if obs_ypos[si] < y_bottomlimit is true                    
+
+            add si, 2
+            loop loophere                           ;loop until cx is 0
+            ret
+
+        returntop_obstacle:
+            call nurng
+            call obstaclexfixed_updateval
+            call increment_score                    ;illegal write when gameover
+
+            mov ax, 0008h
+            mov obs_ypos[si], ax                    ;mov obx_ypos[si] back to top
+
+            add si, 2
+            loop loophere                           ;loop until cx is 0
+            ret
+    move_obstacle endp
+
     draw_obstacle proc near
+        mov cx, 5                       ;set loop to 5
+        mov si, 0
 
-        ;single obstacle
-        mov cx, obstacle_xpos     ;x position is also fixed
-        mov dx, obstacle_ypos     ;y position is same as 
+        loopa:
+            push cx
 
-        drawobs:
-            mov ah, 0ch     ;set config to write pixels
-            mov al, 0fh     ;set pixel color to white
-            mov bh, 00h     ;page number
+            cmp obs_isactive[si], 0         ;if obs_isactive is 0, then don't draw and continue to check next element in array
+            je increment_si
+
+            mov cx, obs_xpos[si]            ;x coord
+            mov dx, obs_ypos[si]            ;y coord
+
             
-            int 10h         ;execute
 
-            inc cx
-            mov ax, cx
-            sub ax, obstacle_xpos
-            cmp ax, char_size
-            jng drawobs
-            mov cx, obstacle_xpos
-            inc dx
-            mov ax, dx 
-            sub ax, obstacle_ypos
-            cmp ax, char_size
-            jng drawobs
-        ret
+            drawobs_horizontal:
+                mov ah, 0ch                 ;set config to write pixel
+                mov al, 0fh                 ;set white as color
+                mov bh, 00h                 ;page number
+                int 10h
+
+                inc cx
+                mov ax, cx
+                sub ax, obs_xpos[si]
+                cmp ax, char_size
+                jng drawobs_horizontal
+                mov cx, obs_xpos[si]
+                inc dx
+
+                mov ax, dx
+                sub ax, obs_ypos[si]
+                cmp ax, char_size
+                jng drawobs_horizontal
+
+            increment_si:
+                add si, 2
+                pop cx
+                loop loopa
+                ret
     draw_obstacle endp
     
     draw_tower proc near
@@ -493,7 +564,6 @@ org 0100h
 
         ret
     _printscore endp
-
            
     playinggame_input proc near
         mov ah, 01h             ;if no key is pressed, exit playinggame_input
