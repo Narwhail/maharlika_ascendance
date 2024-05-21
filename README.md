@@ -1,5 +1,5 @@
 ### Leader: bossing
-<ul>>
+<ul>
   <li>Alcantara, Paolo Mackenzie</li>
   <li>Arcangel, Herson Salvador</li>
   <li>Huliganga, Stephanie Krystyn</li>
