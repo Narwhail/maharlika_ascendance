@@ -1,4 +1,4 @@
-### Leader: bossing
+### Leader: bossing laygo
 <ul>
   <li>Alcantara, Paolo Mackenzie</li>
   <li>Arcangel, Herson Salvador</li>
