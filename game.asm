@@ -1,5 +1,6 @@
 ;resolve illegal read from delay
 ;resolve illegal write from delay
+;occasionaly freezes when playing, can be resolved by pressing keyboard
 
 .model small
 .stack
@@ -47,7 +48,7 @@
     ;obstacle
     obs_xpos dw 00b7h, 00b7h, 00b7h, 00b7h, 00b7h       ;address is by 2 ie. 0,2,4,6,8
     obs_ypos dw 24, 56, 88, 120, 152                    ;address is by 2 ie. 0,2,4,6,8
-    obsfixedxpos_state dw 00h                           ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
+    obsfixedxpos_state dw 0                             ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
     obs_isactive db 1, 0, 0, 0, 0                       ;0 = inactive, 1 = active
 .code
 
@@ -92,7 +93,6 @@ org 0100h
             mov bx, tower_x2
             call draw_tower
 
-    
             call draw_obstacle
             call move_obstacle
             call update_difficulty
@@ -103,18 +103,19 @@ org 0100h
             call playinggame_input
 
             call check_state
-
         game_over:
             call delay                  ;illegal read and write error in dosbox status window
+            call delay
             call clear_screen
             call gameover_printtext
             call generateseed
             call gameover_input         ;check for input
 
+            call check_state
         tutorial_screen:
     main endp
 
-    update_difficulty proc near 
+    update_difficulty proc near      ;to be optimized 
         mov si, 0
         cmp score_tens, 1
         je begin
@@ -179,41 +180,21 @@ org 0100h
             ret
     obstaclexfixed_updateval endp
 
-    prng proc
-
-        cmp rngseed, 0
-        jne gamba
-
-        call generateseed
-        jmp gamba
-
-        gamba:
-            mov ax, rngseed
-            
-            xor dx, dx
-            mov bx, 04h
-            div bx
-            inc dl
-
-            mov randomNum, dl
-        ret
-
-    prng endp
-
-    nurng proc
-        mov ax, rngseed       ; Load the current seed into AX
+    nurng proc      ;to be optimized
+        ;IMPORTANT FOR RNG
+        mov ax, rngseed
         mov bx, 0A9h
-        mul bx             ; AX = AX * BX
-        add ax, 1          ; Increment (c = 1)
-        mov rngseed, ax       ; Update the seed with the new value
-        
-        ; Now AX contains the new seed
-        xor dx, dx         ; Clear DX for division
-        mov bx, 5          ; Set divisor to 5
-        div bx             ; Divide AX by BX, quotient in AL, remainder in DL
+        mul bx                ; rngseed * 169 
+        add ax, 1             ; increment rngseed
+        mov rngseed, ax       
+        ;IMPORTANT FOR RNG
+
+        xor dx, dx         
+        mov bx, 5          ; 1/5 chance for new num, 2/5 chance for retaining previous num
+        div bx             ; divide AX by BX, quotient in AL, remainder in DL
         inc dl
-        mov randomNum, dl  ; Move the remainder (0-4) to randomNum
-        ret                ; Return from procedure
+        mov randomNum, dl
+        ret
     nurng endp
 
     generateseed proc near
@@ -225,7 +206,7 @@ org 0100h
 
     delay proc near
         mov ah, 86h
-        mov cx, 07
+        mov cx, 02
         mov dx, 0e848h
         int 15h
         ret
@@ -243,7 +224,6 @@ org 0100h
         mov obs_isactive[si+4], 0
         mov obs_isactive[si+6], 0
         mov obs_isactive[si+8], 0
-        mov rngseed, 0
         mov randomNum, 02h              
         call obstaclexfixed_updateval
         mov char_xfixedpos, 01h
@@ -251,7 +231,7 @@ org 0100h
         mov score_ones, 0
         mov score_hund, 0
         mov score_tens, 0
-        mov y_velocity, 4
+        mov y_velocity, 8
         ret
     default_gamevalue endp 
 
@@ -264,9 +244,9 @@ org 0100h
         gameover_keypress:
             mov game_state, 01h
             call default_gamevalue
-            call prng
+            call generateseed
             call obstaclexfixed_updateval
-            jmp playing_game
+            ret
     gameover_input endp
 
     gameover_printtext proc near        
@@ -532,10 +512,12 @@ org 0100h
         returntop_obstacle:
             call nurng
             call obstaclexfixed_updateval
-            call increment_score
-
-            mov ax, 0008h
-            mov obs_ypos[si], ax                    ;mov obx_ypos[si] back to top
+            cmp si, 0                               ;check if obstacle 1 is returning to top
+            jne returnobs                           ;if not
+            call increment_score                    ;else then returns it to top          
+            returnobs:
+                mov ax, 0008h
+                mov obs_ypos[si], ax                ;mov obx_ypos[si] back to top
 
             add si, 2
             loop loophere                           ;loop until cx is 0
@@ -667,7 +649,7 @@ org 0100h
         add dl, 7       ;set x pos 7 squares apart from previous' text initial letter
         int 10h
 
-        ; Print hundreds digit
+        ; print hundreds digit
     	push dx
         mov dl, score_hund
     	add dl, '0'
@@ -687,7 +669,7 @@ org 0100h
     	inc dl              ; move to next position
     	int 10h
 
-        ; Print ones digit
+        ; print ones digit
     	push dx
         mov dl, score_ones
     	add dl, '0'
