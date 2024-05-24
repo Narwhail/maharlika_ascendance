@@ -2,6 +2,7 @@
 ;resolve illegal write from delay
 ;occasionaly freezes when playing, can be resolved by pressing keyboard
 ;sprites must be incremented by 1 to properly print
+;menu input requires 2 keypresses
 
 .model small
 .stack
@@ -186,33 +187,6 @@
                         DB 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h
                         DB 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h
                         DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-
-
-                        
-
-
-
-
-
-                        
-
-
-                        
-
-
-                        
-
-                    
-
-
-
-
-
-
-    
-
-
-
 .code
 
 org 0100h
@@ -331,26 +305,18 @@ org 0100h
     render_menutower endp
 
     menu_input proc near
-        mov ah, 01h
-        int 16h
-        jnz menu_keypress       ;if zero flag is false, go to _keypress        
-        jmp menu_input          ;else keep checking for input
-
-        menu_keypress:
-            mov ah, 00h
-            int 16h                 ; get the pressed key
-            cmp al, 's'             ; compare with 's'
-            je keypress_detected    ; if equal, jump to keypress_detected
-            cmp al, 'S'             ; compare with 'S'
-            je keypress_detected    ; if equal, jump to keypress_detected
-            jmp menu_input          ; if not 's' or 'S', keep checking for input
+        mov ah, 00h
+        int 16h                 ; get the pressed key
+        cmp al, 's'             ; compare with 's'
+        je keypress_detected    ; if equal, jump to keypress_detected
+        cmp al, 'S'             ; compare with 'S'
+        je keypress_detected    ; if equal, jump to keypress_detected
+        jmp menu_input          ; if not 's' or 'S', keep checking for input
 
         keypress_detected:
             mov game_state, 01h     ; set game_state to 01h
-            call obstaclexfixed_updateval
             ret
     menu_input endp
-
 
     menuscreen_printtext proc near
         ; Display the first line at row 4, column 5
@@ -384,7 +350,6 @@ org 0100h
         int 21h    
 
         ret   
-        
     menuscreen_printtext endp
 
     check_tick proc 
