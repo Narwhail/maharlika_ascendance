@@ -30,6 +30,10 @@
     score_hund db 0
     score_rate db 1
     difficulty db 0             ;0 = easy, 1 = intermediate, 2 = hard
+    rendercoordX dw 0
+    rendercoordY dw 0
+    _rendersizeX dw 0
+    _rendersizeY dw 0
 
     ;character variables
     char_size dw 0fh
@@ -50,6 +54,60 @@
     obs_ypos dw 24, 56, 88, 120, 152                    ;address is by 2 ie. 0,2,4,6,8
     obsfixedxpos_state dw 0                             ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
     obs_isactive db 1, 0, 0, 0, 0                       ;0 = inactive, 1 = active
+
+    ;sprites
+    player db 0, 0, 0, 0
+    icicle  DB 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h    ;11x15
+            DB 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h
+            DB 00h, 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
+            DB 00h, 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
+            DB 00h, 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 36h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 36h, 36h, 00h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+            DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+    
+    Player_left     DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;16x16
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h
+                    DB 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 00h, 00h
+                    DB 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 00h, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 2Fh, 00h, 00h, 2Fh
+                    DB 00h, 2Fh, 00h, 2Fh, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 2Fh
+                    DB 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh
+                    DB 00h, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh
+                    DB 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h
+                    DB 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 00h, 00h
+                    DB 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 00h, 00h
+                    DB 00h, 00h, 2Fh, 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh
+                    DB 00h, 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh
+                    DB 00h, 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh
+                    DB 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+    Player_right    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;16x16
+                    DB 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 00h, 00h, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h
+                    DB 00h, 00h, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+                    DB 2Fh, 00h, 00h, 2Fh, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 2Fh, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 2Fh, 00h, 2Fh, 00h
+                    DB 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 00h, 00h
+                    DB 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 00h
+                    DB 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+                    DB 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+                    DB 00h, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+                    DB 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h, 2Fh, 00h, 00h
+                    DB 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h
+                    DB 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h, 00h
+                    DB 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+
 .code
 
 org 0100h
@@ -140,7 +198,6 @@ org 0100h
 
     obstaclexfixed_updateval proc near
         mov al, randomNum
-
 
         ;randomNum = 1
         cmp al, 01
@@ -446,7 +503,6 @@ org 0100h
 
             exit_update:
                 ret
-            
     playinggame_input endp
 
     check_collission proc near
@@ -598,29 +654,78 @@ org 0100h
         ret
     draw_tower endp
     
-    draw_char proc near
-        mov cx, char_x     ;x position
-        mov dx, char_y     ;y position
+        ;this is declared before calling _rendersprite
+        ;example syntax
+        ;mov si, offset player           ;tileset array, will refer for color to print
+        ;mov rendercoordX, 0             ;x coord
+        ;mov rendercoordY, 0             ;y coord
+        ;mov _rendersizeX, 16            ;x size
+        ;mov _rendersizeY, 16            ;y size
+        ;this is declared before calling _rendersprite
 
-        drawchar_horizontal:
-            mov ah, 0ch     ;set config to write pixels
-            mov al, 31h     ;set pixel color to green
-            mov bh, 00h     ;page number
-            
-            int 10h         ;execute
+    _rendersprite proc near         ;cx = x coord, dx = y coord, si = tileset(ie. tower, obstacle), _rendersizeX, _rendersizeY, renderX, renderY
+        sub _rendersizeX, 2
+        sub _rendersizeY, 2
+        mov cx, rendercoordX
+        mov dx, rendercoordY
+        render_horizontal:
+            ;horizontal render
+            mov ah, 0ch                 ;set config to write pixels
+            mov al, [si]                ;tile color as per address
+            mov bh, 00h                 ;page number
+            int 10h                     ;execute
 
             inc cx
+            inc si
             mov ax, cx
-            sub ax, char_x
-            cmp ax, char_size
-            jng drawchar_horizontal
-            mov cx, char_x
+            sub ax, rendercoordX
+            cmp ax, _rendersizeX
+            jng render_horizontal       ; if !(currentxcoord - rendercoordX < _rendersizeX),
+                                        ; goto render_horizontal, else continue to next line
+            ;vertical render
+            mov cx, rendercoordX
             inc dx
+            inc si
             mov ax, dx 
-            sub ax, char_y
-            cmp ax, char_size
-            jng drawchar_horizontal
-        ret
+            sub ax, rendercoordY
+            cmp ax, _rendersizeY
+            jng render_horizontal       ; if !(currentycoord - rendercoordY < _rendersizeY),
+            ret                         ; goto render_horizontal, else exit subroutine
+    _rendersprite endp
+
+    draw_char proc near
+        cmp char_xfixedpos, 1
+        je drawleftchar
+        cmp char_xfixedpos, 3
+        je drawleftchar
+
+        cmp char_xfixedpos, 2
+        je drawrightchar
+        cmp char_xfixedpos, 4
+        je drawrightchar
+
+        drawleftchar:
+            mov si, offset Player_left       ;tileset array, will refer for color to print
+            mov ax, char_x
+            mov rendercoordX, ax             ;x coord
+            mov ax, char_y
+            inc ax
+            mov rendercoordY, ax             ;y coord
+            mov _rendersizeX, 16             ;x size
+            mov _rendersizeY, 16             ;y size
+            call _rendersprite
+            ret
+
+        drawrightchar:
+            mov si, offset Player_right       ;tileset array, will refer for color to print
+            mov ax, char_x
+            mov rendercoordX, ax             ;x coord
+            mov ax, char_y
+            mov rendercoordY, ax             ;y coord
+            mov _rendersizeX, 16             ;x size
+            mov _rendersizeY, 16
+            call _rendersprite
+            ret
     draw_char endp
 
     increment_score proc near
@@ -666,7 +771,7 @@ org 0100h
     	int 21h
         pop dx
 
-    	inc dl              ; move to next position
+    	inc dl              ; move to next square
     	int 10h
 
         ; print ones digit
