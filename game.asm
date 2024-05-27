@@ -28,14 +28,14 @@
     current_tick db 00h
     y_toplimit dw 18h
     y_bottomlimit dw 0098h
-    y_velocity dw 4             ;this is used for obstacles, and tower y movement
+    y_velocity dw 8             ;this is used for obstacles, and tower y movement
     game_state dw 0         ;0 = menu screen, 1 = playing, 2 = game over, 3 = tutorial
     randomNum db 01h
     rngseed dw 00h
     score_ones db 0
     score_tens db 0
     score_hund db 0
-    score_rate db 5
+    score_rate db 2
     rendercoordX dw 0
     rendercoordY dw 0
     _rendersizeX dw 0
@@ -66,7 +66,7 @@
     ;obstacle
     obstaclex dw 183, 183, 183, 183, 183
     obs_xpos dw 183, 183, 183, 183, 183                 ;address is by 2 ie. 0,2,4,6,8
-    obs_ypos dw 24, 56, 88, 120, 152                    ;address is by 2 ie. 0,2,4,6,8
+    obs_ypos dw 23, 55, 87, 119, 151                    ;address is by 2 ie. 0,2,4,6,8
     obsfixedxpos_state dw 0                             ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
     obs_isactive dw 1, 0, 0, 0, 0                       ;0 = inactive, 1 = active
     .obs_activetemp dw 0, 0, 0, 0, 0
@@ -285,7 +285,7 @@ org 0100h
             cmp game_state, 2
             je game_over
             cmp game_state, 3
-            je tutorial_screen
+            jmp tutorial_screen
 
         menu_screen:
             call clear_screen
@@ -300,38 +300,21 @@ org 0100h
             call check_tick
             call update_difficulty
 
+            
             call clear_screen
-
+            call playinggame_input
             call move_tower
             call move_obstacle
             ;call move_obstacleTEST
-
             call move_enemy
-            
 
-            call check_collission
             call playinggame_printtext
-            
             call render_gametower
             call draw_obstacle
             call draw_char
-            call playinggame_input
             call render_enemy
-
-            cmp score_tens, 2
-            jne ignore
-            push si
-            mov si, 0
-            mov obs_isactive[si+0], 1
-            mov obs_isactive[si+2], 1
-            mov obs_isactive[si+4], 1
-            mov obs_isactive[si+6], 1
-            mov obs_isactive[si+8], 1
-            pop si
-            ignore:
+            call check_collission
             
-
-
             call check_state
             
         game_over:
@@ -744,7 +727,7 @@ org 0100h
         ;score conditions for difficulties
         ;easy difficulty (score < 20)
         cmp score_tens, 2
-        jl harddiff
+        jl easydiff
 
         ;medium difficulty (20 <= score < 50)
         cmp score_tens, 5
@@ -788,7 +771,7 @@ org 0100h
             mov cx, 5                   ; Loop counter for 5 iterations
             
         updateactive:
-            cmp obs_ypos[si], 8         ; Compare obs_ypos[si] with 8
+            cmp obs_ypos[si], 7         ; Compare obs_ypos[si] with 8
             jne skip_update
             mov ax, .obs_activetemp[si]
             mov obs_isactive[si], ax    ; Set obs_isactive[si] to .obs_activetemp[si]
@@ -883,7 +866,7 @@ org 0100h
     _delay proc near
         mov al, 0
         mov ah, 86h
-        mov cx, 3
+        mov cx, 6
         mov dx, 2
         int 15h
         ret
@@ -891,30 +874,37 @@ org 0100h
 
     default_gamevalue proc near
         mov si, 0
-        mov towerx[si+0], 17
-        mov towerx[si+2], 33
-        mov towerx[si+4], 49
-        mov towerx[si+6], 65
-        mov towerx[si+8], 81
-        mov towerx[si+10], 97
-        mov towerx[si+12], 113
-        mov towerx[si+14], 129
-        mov towerx[si+16], 145
-        mov towerx[si+18], 162
-        mov towerx[si+20], 178
+        ;tower sprite
+        mov towery[si+0], 17
+        mov towery[si+2], 33
+        mov towery[si+4], 49
+        mov towery[si+6], 65
+        mov towery[si+8], 81
+        mov towery[si+10], 97
+        mov towery[si+12], 113
+        mov towery[si+14], 129
+        mov towery[si+16], 145
+        mov towery[si+18], 162
+        mov towery[si+20], 178
+
+        ;enemy
         mov enemy_state, 0
         mov enemy_y, 8
-        mov obs_ypos[si+0], 24
-        mov obs_ypos[si+2], 56
-        mov obs_ypos[si+4], 88
-        mov obs_ypos[si+6], 120
-        mov obs_ypos[si+8], 152
-        mov obs_isactive[si+0], 01
+
+        mov si, 0
+        ;obstacle
+        mov obs_ypos[si+0], 23
+        mov obs_ypos[si+2], 55
+        mov obs_ypos[si+4], 87
+        mov obs_ypos[si+6], 119
+        mov obs_ypos[si+8], 151
+        mov obs_isactive[si+0], 1
         mov obs_isactive[si+2], 0
         mov obs_isactive[si+4], 0
         mov obs_isactive[si+6], 0
         mov obs_isactive[si+8], 0
-        mov randomNum, 02h              
+
+        mov randomNum, 2              
         call obstaclexfixed_updateval
         mov char_xfixedpos, 1
         mov char_y, 0098h
@@ -1171,6 +1161,7 @@ org 0100h
 
             ;if collission is true
             mov game_state, 2         ;set game state to gameover
+            jmp check_state
         ret
 
         ;if false
@@ -1180,10 +1171,7 @@ org 0100h
             ret
     check_collission endp
 
-    move_obstacle proc near
-        mov ax, @data
-        mov ds, ax
-        
+    move_obstacle proc near        
         ;array addresses: 0, 2, 4, 6, 8
         push si
         mov si, 0
@@ -1245,8 +1233,6 @@ org 0100h
     move_obstacleTEST endp
 
     draw_obstacle proc near
-        mov ax, @data
-        mov ds, ax
         mov cx, 5                       ;set loop to 5
         mov si, 0
 
