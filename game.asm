@@ -50,10 +50,16 @@
     char_x dw 0087h
     char_y dw 0098h
     char_velocity dw 0008h
-    char_xfixedpos dw 01h       ;0087h, 00b7h, 00dfh, 010fh
+    char_xfixedpos dw 1       ;0087h, 00b7h, 00dfh, 010fh
+
+    ;enemy variables
     enemy_x dw 202
-    enemy_y dw 8
-    enemy_state db 0           ;0 = inactive, 1 = descending, 2 = active, 3 = ascending
+    enemy_y dw 9
+    enemy_state db 0           ;0 = inactive, 1 = descending, 2 = activating, 3 = ascending
+    icicle_state db 0          ;0 = inactive, 1 = tracking, 2 = active  (will automatically turn inactive once it reaches the bottom limit)
+    iciclex dw ?
+    icicley dw 8
+    icicle_velocity dw 5
 
     ;tower
     menutowerx dw 215
@@ -73,21 +79,21 @@
     difficulty db 0                                     ;0 = easy, 1 = medium, 2 = hard
 
     ;sprites
-    icicle  db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h    ;11x15
-            db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h
-            db 00h, 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
-            db 00h, 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
-            db 00h, 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 36h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 36h, 36h, 00h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
-            db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+    icicle  db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h    ;10x15
+            db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h
+            db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
+            db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
+            db 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
+            db 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
+            db 00h, 00h, 36h, 36h, 36h, 36h, 36h, 00h, 00h, 00h
+            db 00h, 00h, 36h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 36h, 36h, 36h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 36h, 36h, 00h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+            db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
     
     Player_left     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
                     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h
@@ -262,6 +268,42 @@
                         DB 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h
                         DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+    
+    obstacle_left   DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     ;18x17
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+    obstacle_right  DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     ;18x17
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
+                    DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h
+                    DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 .code
 
 org 0100h
@@ -305,18 +347,19 @@ org 0100h
             call playinggame_input
             call move_tower
             call move_obstacle
-            ;call move_obstacleTEST
             call move_enemy
+
+            call move_icicle
 
             call playinggame_printtext
             call render_gametower
-            call draw_obstacle
-            call draw_char
+            call render_char
+            call render_obstacle
+            call render_icicle
             call render_enemy
             call check_collission
             
             call check_state
-            
         game_over:
             call _delay
             call clear_screen
@@ -328,6 +371,81 @@ org 0100h
         tutorial_screen:
     main endp
 
+    ;call move first before render
+    render_icicle proc near
+        cmp icicle_state, 1         ; tracking state
+        je icicle_trackingrender
+
+        cmp icicle_state, 2         ; active
+        je icicle_activerender
+
+        jmp exit_rendericicle
+        icicle_trackingrender:
+            mov ah, 2ch
+            int 21h
+
+            xor ax, ax
+            mov al, dl      ;dl contains milliseconds
+            mov bl, 2       ;divisor, interval = 2 milliseconds
+            div bl          ;divide current milliseconds to bl
+
+            cmp ah, 0       ;compare modulo
+            jne icicle_activerender
+            ret
+
+        icicle_activerender:
+            push si
+            mov si, offset icicle           ;tileset array, will refer for color to print
+            mov ax, iciclex
+            mov rendercoordX, ax             ;x coord
+            mov ax, icicley
+            mov rendercoordY, ax             ;y coord
+            mov _rendersizeX, 10            ;x size
+            mov _rendersizeY, 15            ;y size
+            call _rendersprite
+            pop si
+            jmp exit_rendericicle
+
+        exit_rendericicle:  ret
+    render_icicle endp
+
+    move_icicle proc near
+        cmp icicle_state, 1         ; if icicle_state = 1(activating), copy char_x+3 to iciclex.
+        je icicle_tracking
+
+        cmp icicle_state, 2         ; if icicle_state = 2(active), add icicley to icicle_velocity. Once icicley reaches
+        je icicle_active            ; y_bottomlimit+16, reset icicley position and change state to 0 (inactive)
+
+        jmp exit_moveicicle
+
+        icicle_tracking:                ; will track the player's x position, once enemy_state is 2 (active), icicle_state = 1(tracking)
+            mov ax, char_x
+            add ax, 4                   ;add 4 to charx
+            mov iciclex, ax         
+
+            cmp enemy_state, 2
+            je exit_moveicicle          ;if enemy is in active state, continue to track playerx position
+
+            ;else
+            mov icicle_state, 2         ;else set icicle_state = 2(active), for next call
+            jmp exit_moveicicle
+            
+        icicle_active:
+            mov ax, icicle_velocity
+            add icicley, ax             ;icicley += icicle_velocity
+
+            mov ax, y_bottomlimit
+            add ax, 16
+            cmp icicley, ax
+            jle exit_moveicicle         ;if(icicley <= y_bottomlimit+16), exit
+
+            ;else
+            mov icicle_state, 0
+            mov icicley, 8
+            jmp exit_moveicicle
+        exit_moveicicle:    ret
+    move_icicle endp
+
     move_tower proc 
         push si
         mov si, offset towery                        ;obs_xpos[0]
@@ -338,8 +456,8 @@ org 0100h
             add [si], ax                    ;obs_ypos[si] += y_velocity
 
             mov ax, y_bottomlimit
-            add ax, 32                      ;change this to 32 or 12
-            cmp [si], ax                    ;compare obx_ypos[si] to bottom limit
+            add ax, 32                          ;change this to 32 or 12
+            cmp [si], ax                        ;compare obx_ypos[si] to bottom limit
             jg returntop_tower                  ;if obs_ypos[si] < y_bottomlimit is true                    
 
             add si, 2
@@ -349,9 +467,9 @@ org 0100h
 
         returntop_tower:
             mov ax, 9
-            mov [si], ax                ;mov obx_ypos[si] back to top
+            mov [si], ax                                    ;mov obx_ypos[si] back to top
             add si, 2
-            loop loop_movetower                           ;loop until cx is 0
+            loop loop_movetower                             ;loop until cx is 0
             pop si
             ret
     move_tower endp
@@ -708,6 +826,7 @@ org 0100h
 
         exit_descending:
             mov enemy_state, 2      ;set enemy state to active
+            mov icicle_state, 1     ;set icicle_state to tracking
             mov ah, 2ch
             int 21h
 
@@ -789,6 +908,8 @@ org 0100h
         update_enemy:
             cmp score_ones, 0
             jne not_equal
+            cmp icicle_state, 0
+            jne not_equal
             mov enemy_state, 1
             ret
 
@@ -822,7 +943,7 @@ org 0100h
             ret
 
         obs1_position2:
-            mov obs_xpos[si], 183
+            mov obs_xpos[si], 182
             ret
 
         obs1_position3:
@@ -830,7 +951,7 @@ org 0100h
             ret
 
         obs1_position4:
-            mov obs_xpos[si], 271
+            mov obs_xpos[si], 270
             ret
 
         obs1_exit_xupdate:
@@ -873,6 +994,8 @@ org 0100h
     _delay endp
 
     default_gamevalue proc near
+        mov icicley, 8
+        mov icicle_state, 0
         mov si, 0
         ;tower sprite
         mov towery[si+0], 17
@@ -1133,42 +1256,76 @@ org 0100h
         ;char_x+char_size > obstacle_xpos && char_x < obstacle_xpos+char_size 
         ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
         mov cx, 5
+        push si
         mov si, 0
 
-        collissionloop:
-            cmp obs_isactive[si], 0
-            je exit_collission
+        collission_obstacle:
+            cmp obs_isactive[si], 0         ;ignore current obstacle if inactive(0)
+            je exit_collissionobstacle
             
             mov ax, char_x
             add ax, char_size
             cmp ax, obs_xpos[si]
-            jng exit_collission
+            jng exit_collissionobstacle
 
             mov ax, obs_xpos[si]
+            add ax, char_size
+            cmp char_x, ax
+            jnl exit_collissionobstacle
+
+            mov ax, char_y
+            add ax, char_size
+            cmp ax, obs_ypos[si]
+            jng exit_collissionobstacle
+
+            mov ax, obs_ypos[si]
+            add ax, char_size
+            cmp char_y, ax
+            jnl exit_collissionobstacle
+
+            ;if collission is true
+            mov game_state, 2         ;set game state to gameover
+            jmp check_state
+
+        ;if false
+        exit_collissionobstacle:
+            add si, 2
+            loop collission_obstacle
+            pop si
+        
+        ;check if char is colliding with icicle
+        ;char_x+char_size > iciclex && char_x < iciclex+char_size 
+        ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
+        collission_icicle:
+            cmp icicle_state, 0
+            je exit_collission
+            
+            mov ax, char_x
+            add ax, char_size
+            cmp ax, iciclex
+            jng exit_collission
+
+            mov ax, iciclex
             add ax, char_size
             cmp char_x, ax
             jnl exit_collission
 
             mov ax, char_y
+            sub ax, 2
             add ax, char_size
-            cmp ax, obs_ypos[si]
+            cmp ax, icicley
             jng exit_collission
 
-            mov ax, obs_ypos[si]
+            mov ax, icicley
             add ax, char_size
+            sub ax, 2
             cmp char_y, ax
             jnl exit_collission
 
             ;if collission is true
             mov game_state, 2         ;set game state to gameover
             jmp check_state
-        ret
-
-        ;if false
-        exit_collission:
-            add si, 2
-            loop collissionloop
-            ret
+        exit_collission:    ret
     check_collission endp
 
     move_obstacle proc near        
@@ -1206,73 +1363,130 @@ org 0100h
             ret
     move_obstacle endp
 
-    move_obstacleTEST proc near
-        ;array addresses: 0, 2, 4, 6, 8
-        mov si, 0
-
-        mov ax, y_velocity
-        add obs_ypos[si], ax                    ;obs_ypos[si] += y_velocity
-
-        mov ax, y_bottomlimit
-        add ax, 12
-        cmp obs_ypos[si], ax                    ;compare obx_ypos[si] to bottom limit
-        jg returntop_obstacleTEST                   ;if obs_ypos[si] < y_bottomlimit is true                    
-
-        ret
-
-        returntop_obstacleTEST:
-            mov allowscore, 1                       ;will allow scoring until one obstacle has passed
-            call nurng
-            call obstaclexfixed_updateval
-            mov ax, 0007h
-            mov obs_ypos[si], ax                ;mov obx_ypos[si] back to top
-
+    render_obstacle proc 
+        ;obstacle 1
+        render_obstacle1:
+            mov _rendersizeX, 18            ;x size
+            mov _rendersizeY, 17            ;y size
+            mov si, offset obs_isactive
+            mov ax, [si+0]
+            cmp ax, 0
+            je render_obstacle2
+            mov si, offset obs_xpos
+            mov ax, [si+0]
+            mov rendercoordX, ax             ;x coord
+            mov si, offset obs_ypos
+            mov ax, [si+0]
+            inc ax
+            mov rendercoordY, ax             ;y coord
             mov si, 0
+            call check_leftright
+            call _rendersprite
+            jmp render_obstacle2
 
+        ;obstacle 2
+        render_obstacle2:
+            mov _rendersizeX, 18            ;x size
+            mov _rendersizeY, 17            ;y size
+            mov si, offset obs_isactive
+            mov ax, [si+2]
+            cmp ax, 0
+            je render_obstacle3
+            mov si, offset obs_xpos
+            mov ax, [si+2]
+            mov rendercoordX, ax             ;x coord
+            mov si, offset obs_ypos
+            mov ax, [si+2]
+            inc ax
+            mov rendercoordY, ax             ;y coord
+            mov si, 2
+            call check_leftright
+            call _rendersprite
+            jmp render_obstacle3
+
+        ;obstacle 3
+        render_obstacle3:
+            mov _rendersizeX, 18            ;x size
+            mov _rendersizeY, 17            ;y size
+            mov si, offset obs_isactive
+            mov ax, [si+4]
+            cmp ax, 0
+            je render_obstacle4
+            mov si, offset obs_xpos
+            mov ax, [si+4]
+            mov rendercoordX, ax             ;x coord
+            mov si, offset obs_ypos
+            mov ax, [si+4]
+            inc ax
+            mov rendercoordY, ax             ;y coord
+            mov si, 4
+            call check_leftright
+            call _rendersprite
+            jmp render_obstacle4
+
+        ;obstacle 4
+        render_obstacle4:
+            mov _rendersizeX, 18            ;x size
+            mov _rendersizeY, 17            ;y size
+            mov si, offset obs_isactive
+            mov ax, [si+6]
+            cmp ax, 0
+            je render_obstacle5
+            mov si, offset obs_xpos
+            mov ax, [si+6]
+            mov rendercoordX, ax             ;x coord
+            mov si, offset obs_ypos
+            mov ax, [si+6]
+            inc ax
+            mov rendercoordY, ax             ;y coord
+            mov si, 6
+            call check_leftright
+            call _rendersprite
+            jmp render_obstacle5
+
+        ;obstacle 5
+        render_obstacle5:
+            mov _rendersizeX, 18            ;x size
+            mov _rendersizeY, 17            ;y size
+            mov si, offset obs_isactive
+            mov ax, [si+8]
+            cmp ax, 0
+            je exit_renderobstacle
+            mov si, offset obs_xpos
+            mov ax, [si+8]
+            mov rendercoordX, ax             ;x coord
+            mov si, offset obs_ypos
+            mov ax, [si+8]
+            inc ax
+            mov rendercoordY, ax             ;y coord
+            mov si, 8
+            call check_leftright
+            call _rendersprite
+            jmp exit_renderobstacle
+
+        check_leftright:
+            cmp obs_xpos[si], 135
+            je render_obsleft
+
+            cmp obs_xpos[si], 223
+            je render_obsleft
+
+            cmp obs_xpos[si], 182
+            je render_obsright
+
+            cmp obs_xpos[si], 270
+            je render_obsright
+
+        render_obsleft:
+            mov si, offset obstacle_left            ;tileset array, will refer for color to print
             ret
-    move_obstacleTEST endp
 
-    draw_obstacle proc near
-        mov cx, 5                       ;set loop to 5
-        mov si, 0
+        render_obsright:
+            mov si, offset obstacle_right           ;tileset array, will refer for color to print
+            ret
 
-        loopa:
-            push cx
-
-            cmp obs_isactive[si], 0         ;if obs_isactive is 0, then don't draw and continue to check next element in array
-            je increment_si
-
-            mov cx, obs_xpos[si]            ;x coord
-            mov dx, obs_ypos[si]            ;y coord
-
-            
-
-            drawobs_horizontal:
-                mov ah, 0ch                 ;set config to write pixel
-                mov al, 0fh                 ;set white as color
-
-                mov bh, 00h                 ;page number
-                int 10h
-
-                inc cx
-                mov ax, cx
-                sub ax, obs_xpos[si]
-                cmp ax, char_size
-                jng drawobs_horizontal
-                mov cx, obs_xpos[si]
-                inc dx
-
-                mov ax, dx
-                sub ax, obs_ypos[si]
-                cmp ax, char_size
-                jng drawobs_horizontal
-
-            increment_si:
-                add si, 2
-                pop cx
-                loop loopa
-                ret
-    draw_obstacle endp
+        exit_renderobstacle:    ret
+    render_obstacle endp
    
         ;this is declared before calling _rendersprite
         ;example syntax
@@ -1323,18 +1537,18 @@ org 0100h
             ret
     _rendersprite endp
 
-    draw_char proc near
+    render_char proc near
         cmp char_xfixedpos, 1
-        je drawleftchar
+        je render_leftchar
         cmp char_xfixedpos, 3
-        je drawleftchar
+        je render_leftchar
 
         cmp char_xfixedpos, 2
-        je drawrightchar
+        je render_rightchar
         cmp char_xfixedpos, 4
-        je drawrightchar
+        je render_rightchar
 
-        drawleftchar:
+        render_leftchar:
             mov si, offset Player_left       ;tileset array, will refer for color to print
             mov ax, char_x
             mov rendercoordX, ax             ;x coord
@@ -1346,7 +1560,7 @@ org 0100h
             call _rendersprite
             ret
 
-        drawrightchar:
+        render_rightchar:
             mov si, offset Player_right       ;tileset array, will refer for color to print
             mov ax, char_x
             mov rendercoordX, ax             ;x coord
@@ -1356,7 +1570,7 @@ org 0100h
             mov _rendersizeY, 17
             call _rendersprite
             ret
-    draw_char endp
+    render_char endp
 
     increment_score proc near
         cmp allowscore, 0
