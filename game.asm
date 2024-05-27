@@ -35,7 +35,7 @@
     score_ones db 0
     score_tens db 0
     score_hund db 0
-    score_rate db 2
+    score_rate db 1
     rendercoordX dw 0
     rendercoordY dw 0
     _rendersizeX dw 0
