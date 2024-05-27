@@ -44,6 +44,12 @@
     allowscore db 0             ;0 = inactive, 1 = active
     delaytime db 0
     tempmsecond db 0
+    ; variables ni mhiema
+    tutorial_page db 1
+
+    ; variables ni mhiema
+
+
 
     ;character variables
     char_size dw 0fh
@@ -327,7 +333,7 @@ org 0100h
             cmp game_state, 2
             je game_over
             cmp game_state, 3
-            jmp tutorial_screen
+            je tutorial_screen
 
         menu_screen:
             call clear_screen
@@ -337,20 +343,15 @@ org 0100h
             mov enemy_state, 1
             
             call check_state
-        
         playing_game:
             call check_tick
             call update_difficulty
-
-            
             call clear_screen
             call playinggame_input
             call move_tower
             call move_obstacle
             call move_enemy
-
             call move_icicle
-
             call playinggame_printtext
             call render_gametower
             call render_char
@@ -369,9 +370,188 @@ org 0100h
 
             call check_state
         tutorial_screen:
+            call clear_screen
+            call tutorial_printscreen         ; hanapin mo yung function nito tapos dun ka magdagdag ng code m mhiema, yung **** proc near
+            call tutorial_input               ; same din dito
+            call check_state
     main endp
 
-    ;call move first before render
+    ; ==================================== dito k magcode mhiema ====================================
+    ; i-set mo yung game state to tutorial sa .code pra rekta tutorial screen na kada simula ng run
+
+    ; syntax ng _rendersprite
+    ;mov si, offset player           ;pangalan nung sprite
+    ;mov rendercoordX, 0             ;x coord               upperleft corner position simula ng render sa coord xy
+    ;mov rendercoordY, 0             ;y coord
+    ;mov _rendersizeX, 16            ;x size                kopyahin lang ung nsa comment sa .code sa mga sprite
+    ;mov _rendersizeY, 16            ;y size
+    ;call _rendersprite
+    tutorial_printscreen proc near              ; prints the text and sprites need at a given page
+        ; tuloy m to
+        cmp tutorial_page, 1
+        je page1
+
+        cmp tutorial_page, 2
+        je page2
+
+        page1:
+            ret
+
+        page2:
+            ret
+    tutorial_printscreen endp
+
+
+    ; sa input, dapat
+    ;       a or A ==> dec tutorial_page
+    ;       d or D ==> inc tutorial_page
+    ;       e or E ==> game_state to 0
+    ; di dapat bumaba ng 1 hanggang s dami ng pages n binigay ko
+    ; yung tutorial_page
+    tutorial_input proc near                    ; handles input for navigation
+        mov ah, 00h             ; set mode to read input
+        int 16h                 ; execute mode
+
+        cmp al, 'a'             ; compare with 'a'
+        je a_keyinput           ; if equal, jump to a_keyinput
+        cmp al, 'A'             ; compare with 'A'
+        je a_keyinput           ; if equal, jump to a_keyinput
+
+        ;tuloy mo dito
+
+
+
+
+        jmp tutorial_input          ; if no keys are pressed, jmp to tutorial_input again to check
+
+        a_keyinput:
+            ret
+        d_keyinput:
+            ret
+        e_keyinput:
+            ret
+    tutorial_input endp
+    ; ==================================== dito k magcode mhiema ====================================
+
+    menu_input proc near
+        mov ah, 00h
+        int 16h                 ; get the pressed key
+        cmp al, 's'             ; compare with 's'
+        je menu_skeyinput    ; if equal, jump to keypress_detected
+        cmp al, 'S'             ; compare with 'S'
+        je menu_skeyinput    ; if equal, jump to keypress_detected
+
+        cmp al, 't'
+        je menu_tkeyinput
+        cmp al, 'T'
+        je menu_tkeyinput
+
+        jmp menu_input          ; if no keys pressed, keep jumping to menu_input
+
+        menu_skeyinput:
+            mov game_state, 1       ; set game_state to 01h
+            ret
+
+        menu_tkeyinput:
+            mov game_state, 3       ;set game_state to tutorial
+            ret
+    menu_input endp
+
+    menuscreen_printtext proc near
+        ; Display the first line at row 4, column 5
+        mov ah, 02h     
+        mov bh, 00h     
+        mov dh, 04h    
+        mov dl, 04h     
+        int 10h         
+
+        mov ah, 09h     
+        mov dx, offset line1_menu
+        int 21h         
+
+        ; Display the third line at row 7, column 5
+        mov ah, 02h     
+        mov dh, 07h    
+        mov dl, 04h     
+        int 10h         
+
+        mov ah, 09h     
+        mov dx, offset line3_menu
+        int 21h   
+
+        ; Display the fourth line at row 9, column 5
+        mov ah, 02h     
+        mov dh, 09h     
+        mov dl, 04h     
+        int 10h         
+        mov ah, 09h     
+        mov dx, offset line4_menu 
+        int 21h    
+
+        ret   
+    menuscreen_printtext endp
+
+    render_menutower proc near
+        mov si, offset menutower_topchest
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov ax, menutowerchesty
+        mov rendercoordY, ax
+        mov _rendersizeX, 57
+        mov _rendersizeY, 24
+        call _rendersprite
+
+        mov si, offset menutower_seg1
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov rendercoordY, 103
+        mov _rendersizeX, 57
+        mov _rendersizeY, 17
+        call _rendersprite
+
+        mov si, offset menutower_seg2
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov rendercoordY, 119
+        mov _rendersizeX, 57
+        mov _rendersizeY, 17
+        call _rendersprite
+
+        mov si, offset menutower_seg1
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov rendercoordY, 135
+        mov _rendersizeX, 57
+        mov _rendersizeY, 17
+        call _rendersprite
+
+        mov si, offset menutower_seg2
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov rendercoordY, 151
+        mov _rendersizeX, 57
+        mov _rendersizeY, 17
+        call _rendersprite
+
+        mov si, offset menutower_seg1
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov rendercoordY, 167
+        mov _rendersizeX, 57
+        mov _rendersizeY, 17
+        call _rendersprite
+
+        mov si, offset menutower_seg2
+        mov ax, menutowerx
+        mov rendercoordX, ax
+        mov rendercoordY, 183
+        mov _rendersizeX, 57
+        mov _rendersizeY, 17
+        call _rendersprite
+        xor si, si
+        ret
+    render_menutower endp
+
     render_icicle proc near
         cmp icicle_state, 1         ; tracking state
         je icicle_trackingrender
@@ -600,115 +780,6 @@ org 0100h
             mov si, 0
             ret
     render_gametower endp
-
-    render_menutower proc near
-        mov si, offset menutower_topchest
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov ax, menutowerchesty
-        mov rendercoordY, ax
-        mov _rendersizeX, 57
-        mov _rendersizeY, 24
-        call _rendersprite
-
-        mov si, offset menutower_seg1
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov rendercoordY, 103
-        mov _rendersizeX, 57
-        mov _rendersizeY, 17
-        call _rendersprite
-
-        mov si, offset menutower_seg2
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov rendercoordY, 119
-        mov _rendersizeX, 57
-        mov _rendersizeY, 17
-        call _rendersprite
-
-        mov si, offset menutower_seg1
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov rendercoordY, 135
-        mov _rendersizeX, 57
-        mov _rendersizeY, 17
-        call _rendersprite
-
-        mov si, offset menutower_seg2
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov rendercoordY, 151
-        mov _rendersizeX, 57
-        mov _rendersizeY, 17
-        call _rendersprite
-
-        mov si, offset menutower_seg1
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov rendercoordY, 167
-        mov _rendersizeX, 57
-        mov _rendersizeY, 17
-        call _rendersprite
-
-        mov si, offset menutower_seg2
-        mov ax, menutowerx
-        mov rendercoordX, ax
-        mov rendercoordY, 183
-        mov _rendersizeX, 57
-        mov _rendersizeY, 17
-        call _rendersprite
-        xor si, si
-        ret
-    render_menutower endp
-
-    menu_input proc near
-        mov ah, 00h
-        int 16h                 ; get the pressed key
-        cmp al, 's'             ; compare with 's'
-        je keypress_detected    ; if equal, jump to keypress_detected
-        cmp al, 'S'             ; compare with 'S'
-        je keypress_detected    ; if equal, jump to keypress_detected
-        jmp menu_input          ; if not 's' or 'S', keep checking for input
-
-        keypress_detected:
-            mov game_state, 01h     ; set game_state to 01h
-            ret
-    menu_input endp
-
-    menuscreen_printtext proc near
-        ; Display the first line at row 4, column 5
-        mov ah, 02h     
-        mov bh, 00h     
-        mov dh, 04h    
-        mov dl, 04h     
-        int 10h         
-
-        mov ah, 09h     
-        mov dx, offset line1_menu
-        int 21h         
-
-        ; Display the third line at row 7, column 5
-        mov ah, 02h     
-        mov dh, 07h    
-        mov dl, 04h     
-        int 10h         
-
-        mov ah, 09h     
-        mov dx, offset line3_menu
-        int 21h   
-
-        ; Display the fourth line at row 9, column 5
-        mov ah, 02h     
-        mov dh, 09h     
-        mov dl, 04h     
-        int 10h         
-        mov ah, 09h     
-        mov dx, offset line4_menu 
-        int 21h    
-
-        ret   
-    menuscreen_printtext endp
 
     check_tick proc near
         mov ah, 2ch
