@@ -9,8 +9,6 @@
     ;playing state
     line1_game db "MAHARLIKA", "$"
     line2_game db "ASCENDANCE", "$"
-    line3_game db "Control using", "$"
-    line4_game db "'WASD'", "$"
     line5_game db "Score:" ,"$"
     blank_game db "   " ,"$"
     ;gameover state
@@ -18,9 +16,19 @@
     line2_over db "Score: ", "$"
     line3_over db "Press any key to return to menu", "$"
     ;menu state
-    line1_menu db "MAHARLIKA ASCENDANCE", "$"
+    line1_menu db "MAHARLIKA ASCENDANCE", "$"   ;20
     line3_menu db "Press 'S' to Start", "$"
     line4_menu db "Press 'T' for Tutorial", "$"
+    ;tutorial state
+    line1_pg1 db "Use 'wasd' to move", "$"      ;18
+    line2_pg1 db "your character!", "$"         ;15
+    line1_pg2 db "Gain score", "$"              ;10
+    line2_pg2 db "by staying alive!", "$"       ;17
+    line1_pg3 db "Watch out for obstacles", "$" ;23
+    line2_pg3 db "and falling icicles!", "$"    ;20
+    line1_pg4 db "Obstacles increase", "$"      ;18
+    line2_pg4 db "as you score!", "$"           ;13
+    line3_tutorial db "[e] menu", "$"           ;8
 
     ;game variables
     current_tick db 00h
@@ -42,12 +50,11 @@
     allowscore db 0             ;0 = inactive, 1 = active
     delaytime db 0
     tempmsecond db 0
-    ; variables ni mhiema
+    _stringx db 0
+    _stringy db 0
+    _stringcolor db 0
+    _stringlength dw 0
     tutorial_page db 1
-
-    ; variables ni mhiema
-
-
 
     ;character variables
     char_size dw 0fh
@@ -509,38 +516,558 @@ org 0100h
         exit_renderdeath:   ret
     render_chardeathanimation endp
 
-    ; ==================================== dito k magcode mhiema ====================================
-    ; i-set mo yung game state to tutorial sa .code pra rekta tutorial screen na kada simula ng run
-
-    ; syntax ng _rendersprite
-    ;mov si, offset player           ;pangalan nung sprite
-    ;mov rendercoordX, 0             ;x coord               upperleft corner position simula ng render sa coord xy
-    ;mov rendercoordY, 0             ;y coord
-    ;mov _rendersizeX, 16            ;x size                kopyahin lang ung nsa comment sa .code sa mga sprite
-    ;mov _rendersizeY, 16            ;y size
-    ;call _rendersprite
     tutorial_printscreen proc near              ; prints the text and sprites need at a given page
-        ; tuloy m to
         cmp tutorial_page, 1
-        je page1
+        jne checkpage2
+        jmp page1
 
+        checkpage2:
         cmp tutorial_page, 2
-        je page2
+        jne checkpage3
+        jmp page2
 
+        checkpage3:
+        cmp tutorial_page, 3
+        jne checkpage4
+        jmp page3
+
+        checkpage4:
+        cmp tutorial_page, 4
+        jne exit_tutprintscreen
+        jmp page4
+
+        exit_tutprintscreen:    ret
         page1:
+            mov si, offset Player_left
+            mov rendercoordX, 128
+            mov rendercoordY, 87
+            mov _rendersizeX, 17
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 56
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 72
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg2
+            mov rendercoordX, 144
+            mov rendercoordY, 88
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+        
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 104
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 120
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov _stringx, 10
+            mov _stringy, 2
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line1_pg1       ;Use 'wasd' to move
+            mov _stringx, 11
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 18
+            call _printtext
+
+            mov bp, offset line2_pg1        ;your character!
+            mov _stringx, 13
+            mov _stringy, 19
+            mov _stringcolor, 0fh
+            mov _stringlength, 15
+            call _printtext
+
+            mov bp, offset line3_tutorial        ;[e] menu
+            mov _stringx, 16
+            mov _stringy, 23
+            mov _stringcolor, 0eh
+            mov _stringlength, 8
+            call _printtext
+
+            ; navigation bar
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 18     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 07h              ;character to print - solid circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 4
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 18     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 09h              ;character to print - blank circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 23     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1ah              ;character to print - right arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+            ret
+            
+        page2:
+            mov si, offset Player_right
+            mov rendercoordX, 176
+            mov rendercoordY, 103
+            mov _rendersizeX, 17
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 56
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 72
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg2
+            mov rendercoordX, 144
+            mov rendercoordY, 88
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+        
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 104
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 120
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset obstacle_left
+            mov rendercoordX, 128
+            mov rendercoordY, 95
+            mov _rendersizeX, 18
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov _stringx, 10
+            mov _stringy, 2
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line1_pg2       ;Gain score
+            mov _stringx, 15
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 10
+            call _printtext
+
+
+            mov bp, offset line2_pg2       ;by staying alive!
+            mov _stringx, 12
+            mov _stringy, 19
+            mov _stringcolor, 0fh
+            mov _stringlength, 17
+            call _printtext
+
+            mov bp, offset line3_tutorial        ;[e] menu
+            mov _stringx, 16
+            mov _stringy, 23
+            mov _stringcolor, 0eh
+            mov _stringlength, 8
+            call _printtext
+
+            ; navigation bar
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 16     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1bh              ;character to print - left arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 18     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 07h              ;character to print - solid circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 4
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 19     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 09h              ;character to print - blank circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 23     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1ah              ;character to print - right arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
             ret
 
-        page2:
+        page3:
+            mov si, offset Player_left
+            mov rendercoordX, 128
+            mov rendercoordY, 103
+            mov _rendersizeX, 17
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset enemy
+            mov rendercoordX, 195
+            mov rendercoordY, 60
+            mov _rendersizeX, 17
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 56
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 72
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg2
+            mov rendercoordX, 144
+            mov rendercoordY, 88
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+        
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 104
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 120
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset obstacle_right
+            mov rendercoordX, 175
+            mov rendercoordY, 79
+            mov _rendersizeX, 18
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset icicle
+            mov rendercoordX, 132
+            mov rendercoordY, 48
+            mov _rendersizeX, 10
+            mov _rendersizeY, 15
+            call _rendersprite
+
+            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov _stringx, 10
+            mov _stringy, 2
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            ; enemy exclamation
+            mov ah, 02h     
+            mov bh, 0     
+            mov dh, 6              
+            mov dl, 25          
+            int 10h 
+
+            mov ah, 0Eh            
+            mov al, '!'
+            mov bh, 0
+            mov bl, 20h            
+            int 10h
+
+            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov _stringx, 10
+            mov _stringy, 2
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line1_pg3        ;Watch out for obstacles
+            mov _stringx, 9
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 23
+            call _printtext
+
+            mov bp, offset line2_pg3        ;and falling icicles!
+            mov _stringx, 11
+            mov _stringy, 19
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line3_tutorial        ;[e] menu
+            mov _stringx, 16
+            mov _stringy, 23
+            mov _stringcolor, 0eh
+            mov _stringlength, 8
+            call _printtext
+
+            ; navigation bar
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 16     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1bh              ;character to print - left arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 18     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 07h              ;character to print - solid circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 4
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 20     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 09h              ;character to print - blank circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 23     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1ah              ;character to print - right arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+            ret
+
+        page4:
+            mov si, offset Player_right
+            mov rendercoordX, 176
+            mov rendercoordY, 87
+            mov _rendersizeX, 17
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 56
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 72
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg2
+            mov rendercoordX, 144
+            mov rendercoordY, 88
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+        
+            mov si, offset ingame_towerseg3
+            mov rendercoordX, 144
+            mov rendercoordY, 104
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset ingame_towerseg1
+            mov rendercoordX, 144
+            mov rendercoordY, 120
+            mov _rendersizeX, 33
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset obstacle_right
+            mov rendercoordX, 175
+            mov rendercoordY, 63
+            mov _rendersizeX, 18
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov si, offset obstacle_right
+            mov rendercoordX, 175
+            mov rendercoordY, 111
+            mov _rendersizeX, 18
+            mov _rendersizeY, 17
+            call _rendersprite
+        
+            mov si, offset obstacle_left
+            mov rendercoordX, 128
+            mov rendercoordY, 87
+            mov _rendersizeX, 18
+            mov _rendersizeY, 17
+            call _rendersprite
+
+            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov _stringx, 10
+            mov _stringy, 2
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line1_pg4        ;Obstacles increase
+            mov _stringx, 11
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 18
+            call _printtext
+
+            mov bp, offset line2_pg4        ;as you score!
+            mov _stringx, 14
+            mov _stringy, 19
+            mov _stringcolor, 0fh
+            mov _stringlength, 13
+            call _printtext
+
+            mov bp, offset line3_tutorial        ;[e] menu
+            mov _stringx, 16
+            mov _stringy, 23
+            mov _stringcolor, 0eh
+            mov _stringlength, 8
+            call _printtext
+
+            ; navigation bar
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 16     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1bh              ;character to print - left arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 18     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 07h              ;character to print - solid circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 4
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 21     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 09h              ;character to print - blank circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
             ret
     tutorial_printscreen endp
 
-
-    ; sa input, dapat
-    ;       a or A ==> dec tutorial_page
-    ;       d or D ==> inc tutorial_page
-    ;       e or E ==> game_state to 0
-    ; di dapat bumaba ng 1 hanggang s dami ng pages n binigay ko
-    ; yung tutorial_page
     tutorial_input proc near                    ; handles input for navigation
         mov ah, 00h             ; set mode to read input
         int 16h                 ; execute mode
@@ -550,21 +1077,33 @@ org 0100h
         cmp al, 'A'             ; compare with 'A'
         je a_keyinput           ; if equal, jump to a_keyinput
 
-        ;tuloy mo dito
+        cmp al, 'd'
+        je d_keyinput
+        cmp al, 'D'
+        je d_keyinput
 
-
-
+        cmp al, 'e'
+        je e_keyinput
+        cmp al, 'E'
+        je e_keyinput
 
         jmp tutorial_input          ; if no keys are pressed, jmp to tutorial_input again to check
 
         a_keyinput:
+            cmp tutorial_page, 1
+            je tutorial_input
+            dec tutorial_page
             ret
         d_keyinput:
+            cmp tutorial_page, 4
+            je tutorial_input
+            inc tutorial_page
             ret
         e_keyinput:
+            mov game_state, 0
+            mov tutorial_page, 1
             ret
     tutorial_input endp
-    ; ==================================== dito k magcode mhiema ====================================
 
     menu_input proc near
         mov ah, 00h
@@ -619,10 +1158,30 @@ org 0100h
         int 10h         
         mov ah, 09h     
         mov dx, offset line4_menu 
-        int 21h    
-
-        ret   
+        int 21h
+        ret
     menuscreen_printtext endp
+
+    ; syntax
+    ; mov bp, offset daString
+    ; mov _stringx, 2               ; x position of string
+    ; mov _stringy, 2               ; y position of string
+    ; mov bl, _stringcolor
+    ; mov _stringlength, 5
+    ; call _printtext
+    _printtext proc
+        mov  ax, ds
+        mov  es, ax
+        mov dh, _stringy
+        mov dl, _stringx
+        mov bl, _stringcolor
+        mov cx, _stringlength
+        mov ax, 1301h   
+        mov bh, 00h   ;page
+        int 10h
+        mov bp, 0
+        ret 
+    _printtext endp
 
     render_menutower proc near
         mov si, offset menutower_topchest
@@ -1304,24 +1863,6 @@ org 0100h
         int 10h
         mov ah, 09h
         mov dx, offset line2_game       ;ascendance
-        int 21h
-
-        mov ah, 02h
-        mov bh, 00h
-        mov dh, 09h
-        mov dl, 02h
-        int 10h
-        mov ah, 09h
-        mov dx, offset line3_game       ;control using
-        int 21h
-
-        mov ah, 02h
-        mov bh, 00h
-        mov dh, 0bh
-        mov dl, 05h
-        int 10h
-        mov ah, 09h
-        mov dx, offset line4_game       ;wasd
         int 21h
 
         mov ah, 02h
