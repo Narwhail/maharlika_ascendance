@@ -1,5 +1,3 @@
-;resolve illegal read from delay
-;resolve illegal write from delay
 ;occasionaly freezes when playing, can be resolved by pressing keyboard
 ;sprites must be incremented by 1 to properly print
 ;menu input requires 2 keypresses
@@ -1194,17 +1192,6 @@ org 0100h
         mov rngseed, dx
         ret
     generateseed endp
-
-    ;syntax ie.
-    ;mov delaytime, 5
-    _delay proc near
-        mov al, 0
-        mov ah, 86h
-        mov cx, 6
-        mov dx, 2
-        int 15h
-        ret
-    _delay endp
 
     default_gamevalue proc near
         mov icicley, 8
