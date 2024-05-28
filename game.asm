@@ -310,6 +310,42 @@
                     DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
                     DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h
                     DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+    Player_leftdark     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
+                        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 00h, 00h, 00h
+                        db 00h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 14h, 00h, 00h, 00h
+                        db 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 14h, 00h, 00h, 00h
+                        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 14h, 00h, 14h, 00h, 00h, 14h, 00h
+                        db 00h, 14h, 00h, 14h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 00h, 00h, 00h, 14h, 14h, 00h
+                        db 00h, 00h, 14h, 14h, 00h, 00h, 00h, 14h, 00h, 14h, 14h, 00h, 14h, 00h, 14h, 14h, 00h
+                        db 00h, 14h, 14h, 14h, 00h, 14h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 00h
+                        db 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 00h, 00h
+                        db 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h, 00h, 00h, 14h, 14h, 00h, 00h, 00h
+                        db 00h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 00h, 00h
+                        db 00h, 00h, 14h, 00h, 00h, 14h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 14h, 00h
+                        db 00h, 00h, 00h, 14h, 14h, 00h, 00h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h
+                        db 00h, 00h, 00h, 14h, 14h, 00h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h
+                        db 00h, 14h, 14h, 00h, 00h, 00h, 14h, 00h, 14h, 14h, 14h, 14h, 00h, 00h, 00h, 14h, 00h
+                        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+    Player_rightdark    db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
+                        db 00h, 00h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                        db 00h, 00h, 14h, 00h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h, 00h
+                        db 00h, 00h, 14h, 00h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h
+                        db 14h, 00h, 00h, 14h, 00h, 14h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                        db 14h, 14h, 00h, 00h, 00h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 14h, 00h, 14h, 00h, 00h
+                        db 14h, 14h, 00h, 14h, 00h, 14h, 14h, 00h, 14h, 00h, 00h, 00h, 14h, 14h, 00h, 00h, 00h
+                        db 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 14h, 00h, 14h, 14h, 14h, 00h, 00h
+                        db 00h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h
+                        db 00h, 00h, 14h, 14h, 00h, 00h, 00h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h
+                        db 00h, 00h, 14h, 00h, 14h, 14h, 14h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h
+                        db 14h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 14h, 00h, 00h, 14h, 00h, 00h, 00h
+                        db 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 00h, 00h, 14h, 14h, 00h, 00h, 00h, 00h
+                        db 14h, 14h, 00h, 14h, 14h, 00h, 14h, 14h, 00h, 14h, 00h, 14h, 14h, 00h, 00h, 00h, 00h
+                        db 14h, 00h, 00h, 00h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 00h, 00h, 14h, 14h, 00h, 00h
+                        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+                        db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 .code
 
 org 0100h
@@ -362,7 +398,7 @@ org 0100h
             
             call check_state
         game_over:
-            call _delay
+            call render_chardeathanimation
             call clear_screen
             call gameover_printtext
             call generateseed
@@ -375,6 +411,105 @@ org 0100h
             call tutorial_input               ; same din dito
             call check_state
     main endp
+
+    render_chardeathanimation proc near
+        mov ah, 2ch
+        int 21h
+
+        mov tempmsecond, dh
+        add tempmsecond, 4      ;add 2 seconds to temporary time
+        cmp tempmsecond, 59
+        jng loop_renderdeath
+        sub tempmsecond, 60
+
+        loop_renderdeath:
+            cmp char_xfixedpos, 1
+            je render_leftchardeath
+
+            cmp char_xfixedpos, 3
+            je render_leftchardeath
+
+            cmp char_xfixedpos, 2
+            je render_rightchardeath
+
+            cmp char_xfixedpos, 4
+            je render_rightchardeath
+
+        render_leftchardeath:
+            mov ah, 2ch
+            int 21h
+            xor ax, ax
+            mov al, dh      ;dh contains seconds
+            mov bl, 2       ;divisor, interval = 2 seconds
+            div bl          ;divide current seconds to bl
+            cmp ah, 0       ;compare remainder
+            je _renderleftdark
+            jmp _renderleft
+
+            _renderleft:
+                mov si, offset Player_left      ;pangalan nung sprite
+                mov ax, char_x
+                mov rendercoordX, ax                ;x coord
+                mov ax, char_y
+                mov rendercoordY, ax                ;y coord
+                mov _rendersizeX, 17                ;x size
+                mov _rendersizeY, 17                ;y size
+                call _rendersprite     
+                jmp check_renderdeathtime
+
+            _renderleftdark:
+                mov si, offset Player_leftdark      ;pangalan nung sprite
+                mov ax, char_x
+                mov rendercoordX, ax                ;x coord
+                mov ax, char_y
+                mov rendercoordY, ax                ;y coord
+                mov _rendersizeX, 17                ;x size
+                mov _rendersizeY, 17                ;y size
+                call _rendersprite
+                jmp check_renderdeathtime
+
+        render_rightchardeath:
+            mov ah, 2ch
+            int 21h
+            xor ax, ax
+            mov al, dh      ;dh contains seconds
+            mov bl, 2       ;divisor, interval = 2 seconds
+            div bl          ;divide current seconds to bl
+            cmp ah, 0       ;compare remainder
+            je _renderrightdark
+            jmp _renderright
+
+            _renderright:
+                mov si, offset Player_right      ;pangalan nung sprite
+                mov ax, char_x
+                mov rendercoordX, ax                ;x coord
+                mov ax, char_y
+                mov rendercoordY, ax                ;y coord
+                mov _rendersizeX, 17                ;x size
+                mov _rendersizeY, 17                ;y size
+                call _rendersprite     
+                jmp check_renderdeathtime
+
+            _renderrightdark:
+                mov si, offset Player_rightdark      ;pangalan nung sprite
+                mov ax, char_x
+                mov rendercoordX, ax                ;x coord
+                mov ax, char_y
+                mov rendercoordY, ax                ;y coord
+                mov _rendersizeX, 17                ;x size
+                mov _rendersizeY, 17                ;y size
+                call _rendersprite
+                jmp check_renderdeathtime
+
+        check_renderdeathtime:
+            mov ah, 2ch
+            int 21h
+            cmp tempmsecond, dh              
+            je exit_renderdeath
+            jmp loop_renderdeath
+
+        exit_renderdeath:   ret
+    render_chardeathanimation endp
 
     ; ==================================== dito k magcode mhiema ====================================
     ; i-set mo yung game state to tutorial sa .code pra rekta tutorial screen na kada simula ng run
@@ -553,6 +688,14 @@ org 0100h
     render_menutower endp
 
     render_icicle proc near
+        ; icicle has 3 states. 0 for inactive, 1 for tracking, 2 for active
+        ; Inactive state basically ignores rendering the sprite and changing(moving) 
+        ;   the icicle position
+        ; Tracking state renders the sprite for every 2 centiseconds, clear_screen is 
+        ;   called every game tick mimicking a flickering effect. It also sets
+        ;   the icicleX position to be same as char_x + 4 position. Adding 4 pixels 
+        ;   will make the icicle render at the middle of the character since they
+        ;   differ in size. icicle = 10x15, player = 17x17
         cmp icicle_state, 1         ; tracking state
         je icicle_trackingrender
 
@@ -561,50 +704,50 @@ org 0100h
 
         jmp exit_rendericicle
         icicle_trackingrender:
-            mov ah, 2ch
-            int 21h
+            mov ah, 2ch                     ; set mode to read time. dh = seconds, dl = 1/00 seconds, centiseconds
+            int 21h                         ; execute mode
 
-            xor ax, ax
-            mov al, dl      ;dl contains milliseconds
-            mov bl, 2       ;divisor, interval = 2 milliseconds
-            div bl          ;divide current milliseconds to bl
+            xor ax, ax                      ; reset ax register to 0
+            mov al, dl                      ;dl contains centiseconds
+            mov bl, 2                       ;bl will be the divisor, interval = 2 centiseconds
+            div bl                          ;divide current centiseconds to bl
 
-            cmp ah, 0       ;compare modulo
-            jne icicle_activerender
-            ret
+            cmp ah, 0                       ;compare modulo
+            jne icicle_activerender         ;if not 0, then render the sprite
+            ret                             ;else, dont render and exit function
 
         icicle_activerender:
-            push si
+            push si                         ; save si register value
             mov si, offset icicle           ;tileset array, will refer for color to print
             mov ax, iciclex
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax            ;x coord
             mov ax, icicley
-            mov rendercoordY, ax             ;y coord
+            mov rendercoordY, ax            ;y coord
             mov _rendersizeX, 10            ;x size
             mov _rendersizeY, 15            ;y size
             call _rendersprite
-            pop si
+            pop si                          ; return previously saved si register value
             jmp exit_rendericicle
 
         exit_rendericicle:  ret
     render_icicle endp
 
     move_icicle proc near
-        cmp icicle_state, 1         ; if icicle_state = 1(activating), copy char_x+3 to iciclex.
+        cmp icicle_state, 1             ; if icicle_state = 1(activating), copy char_x+4 to iciclex.
         je icicle_tracking
 
-        cmp icicle_state, 2         ; if icicle_state = 2(active), add icicley to icicle_velocity. Once icicley reaches
-        je icicle_active            ; y_bottomlimit+16, reset icicley position and change state to 0 (inactive)
+        cmp icicle_state, 2             ; if icicle_state = 2(active), add icicley to icicle_velocity. Once icicley reaches
+        je icicle_active                ; y_bottomlimit+16, reset icicley position and change state to 0 (inactive)
 
-        jmp exit_moveicicle
+        jmp exit_moveicicle             ;else (no conditions are satisfied), exit function
 
-        icicle_tracking:                ; will track the player's x position, once enemy_state is 2 (active), icicle_state = 1(tracking)
+        icicle_tracking:                ; will track the player's x position, if enemy_state is 2 (active), then icicle_state = 1(tracking)
             mov ax, char_x
             add ax, 4                   ;add 4 to charx
             mov iciclex, ax         
 
             cmp enemy_state, 2
-            je exit_moveicicle          ;if enemy is in active state, continue to track playerx position
+            je exit_moveicicle          ;if enemy is in active state, continue to track playerx position for next run
 
             ;else
             mov icicle_state, 2         ;else set icicle_state = 2(active), for next call
@@ -619,49 +762,46 @@ org 0100h
             cmp icicley, ax
             jle exit_moveicicle         ;if(icicley <= y_bottomlimit+16), exit
 
-            ;else
-            mov icicle_state, 0
+            mov icicle_state, 0         ;else, reset icicle_state to inactive and icicley to 8
             mov icicley, 8
             jmp exit_moveicicle
         exit_moveicicle:    ret
     move_icicle endp
 
     move_tower proc 
-        push si
-        mov si, offset towery                        ;obs_xpos[0]
-        mov cx, 11                                   ;set loop to 11
+        push si                             ; save si register value
+        mov si, offset towery               ; set si the address of towery, since towery is a data word(dw) array
+                                            ; address is by 2s. si = 0, 2, 4, ...
+        mov cx, 11                          ;set loop to 11
 
         loop_movetower:
             mov ax, y_velocity
-            add [si], ax                    ;obs_ypos[si] += y_velocity
+            add [si], ax                    ;towery[si] += y_velocity
 
             mov ax, y_bottomlimit
-            add ax, 32                          ;change this to 32 or 12
-            cmp [si], ax                        ;compare obx_ypos[si] to bottom limit
-            jg returntop_tower                  ;if obs_ypos[si] < y_bottomlimit is true                    
+            add ax, 32                      ; added 32 pixels since bottom limit is mainly used for restricting the player from going further
+            cmp [si], ax                    ; compare towery[si] to y_bottomlimit
+            jng loopcheck_movetower         ; if not obs_ypos[si] < y_bottomlimit                   
 
-            add si, 2
-            loop loop_movetower                           ;loop until cx is 0
-            pop si
-            ret
-
-        returntop_tower:
+            ;returntop_tower
             mov ax, 9
-            mov [si], ax                                    ;mov obx_ypos[si] back to top
-            add si, 2
-            loop loop_movetower                             ;loop until cx is 0
-            pop si
-            ret
+            mov [si], ax                    ;mov obx_ypos[si] back to top
+
+        loopcheck_movetower:
+            add si, 2                       ;add 2 to address, for next loop
+            loop loop_movetower             ;loop until cx is 0, decrements cx if cx has value
+            pop si                          ;return previously saved si register value
+            ret                             ;return function
     move_tower endp
 
     render_gametower proc near
-        mov cx, 1
-        mov towerx, 151
+        mov cx, 1                           ; loop 1 time
+        mov towerx, 151                     ; first towerx is 151, second towerx is 239
 
         tower_segment1:
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            ;x coord
             mov ax, [si+0]
             mov rendercoordY, ax            ;y coord
             mov _rendersizeX, 33            ;x size
@@ -802,14 +942,14 @@ org 0100h
     check_tick endp
 
     render_enemy proc near
-        cmp enemy_state, 0
+        cmp enemy_state, 0              ; if enemy_state is inactive, exit function (doesn't render the enemy)
         je exit_drawenemy
 
-        mov si, offset enemy           ;tileset array, will refer for color to print
+        mov si, offset enemy            ;tileset array, will refer for color to print
         mov ax, enemy_x
-        mov rendercoordX, ax             ;x coord
+        mov rendercoordX, ax            ;x coord
         mov ax, enemy_y
-        mov rendercoordY, ax             ;y coord
+        mov rendercoordY, ax            ;y coord
         mov _rendersizeX, 17            ;x size
         mov _rendersizeY, 17            ;y size
         call _rendersprite
@@ -817,6 +957,7 @@ org 0100h
         cmp enemy_state, 2              
         jne exit_drawenemy              ;if enemy is active continue to next line,
                                         ;else jump to exit_drawenemy
+
         ; if(enemy_state == 2 && tempmsecond == dh)
         mov ah, 2ch
         int 21h
@@ -829,8 +970,8 @@ org 0100h
         exclamation:
             mov ah, 02h     
             mov bh, 0     
-            mov dh, 2              ;y pos
-            mov dl, 26             ;x pos
+            mov dh, 2               ;y pos
+            mov dl, 26              ;x pos
             int 10h 
 
             mov ah, 0Eh             ;config for writing text with color
@@ -843,12 +984,12 @@ org 0100h
             int 21h
 
             xor ax, ax
-            mov al, dl      ;dl contains milliseconds
-            mov bl, 2       ;divisor, interval = 2 milliseconds
-            div bl          ;divide current milliseconds to bl
+            mov al, dl      ;dl contains centiseconds
+            mov bl, 2       ;divisor, interval = 2 centiseconds
+            div bl          ;divide current centiseconds to bl
 
             cmp ah, 0       ;compare modulo
-            je draw_exclamation
+            je draw_exclamation     
             ret
 
             draw_exclamation:
@@ -988,7 +1129,8 @@ org 0100h
             ret
     update_difficulty endp
 
-    obstaclexfixed_updateval proc near
+    ; _update_obsXpos must be called after value in randomNum is called to change the obstacles x position
+    _update_obsXpos proc near
         mov al, randomNum
 
         ;randomNum = 1
@@ -1027,7 +1169,7 @@ org 0100h
 
         obs1_exit_xupdate:
             ret
-    obstaclexfixed_updateval endp
+    _update_obsXpos endp
 
     nurng proc      ;to be optimized
         ;IMPORTANT FOR RNG
@@ -1099,7 +1241,7 @@ org 0100h
         mov obs_isactive[si+8], 0
 
         mov randomNum, 2              
-        call obstaclexfixed_updateval
+        call _update_obsXpos
         mov char_xfixedpos, 1
         mov char_y, 0098h
         mov score_ones, 0
@@ -1119,7 +1261,7 @@ org 0100h
             mov game_state, 0
             call default_gamevalue
             call generateseed
-            call obstaclexfixed_updateval
+            call _update_obsXpos
             ret
     gameover_input endp
 
@@ -1426,7 +1568,7 @@ org 0100h
             mov obs_ypos[si], ax                ;mov obx_ypos[si] back to top
 
             call nurng
-            call obstaclexfixed_updateval
+            call _update_obsXpos
             add si, 2
             loop loophere                           ;loop until cx is 0
             pop si
