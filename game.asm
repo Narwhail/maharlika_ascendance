@@ -61,6 +61,7 @@
     _stringcolor db 0
     _stringlength dw 0
     tutorial_page db 1
+    current_seconds db 0
 
     ;character variables
     char_size dw 0fh
@@ -84,8 +85,8 @@
     coiny dw 0
     coinsize dw 8
     tempcoinx dw 0
-    coin_state dw 2
-    coin_value dw 20
+    coin_state dw 2                 ; 0 inactive, 1 activating, 2 active, 3 cooldown
+    coin_value dw 5
     obsy_address dw 0
 
     ;tower
@@ -102,7 +103,6 @@
     obsfixedxpos_state dw 0                             ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
     obs_isactive dw 1, 0, 0, 0, 0                       ;0 = inactive, 1 = active
     .obs_activetemp dw 0, 0, 0, 0, 0
-    difficulty db 0                                     ;0 = easy, 1 = medium, 2 = hard
 
     ;sprites
 
@@ -459,7 +459,8 @@ org 0100h
             call move_icicle
             call move_coin
             call update_coinvalue
-            ;call coin_collission
+            call update_coinactive
+            call coin_collission
             call playinggame_printtext
             call render_gametower
             call render_char
@@ -488,50 +489,103 @@ org 0100h
     main endp
 
     coin_collission proc
+        ;check if char is colliding with obstacle
+        ;char_x+char_size > obstacle_xpos && char_x < obstacle_xpos+char_size 
+        ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
+        cmp coin_state, 0                       ;ignore coin if inactive(0)
+        je exit_coincollission2
+        jmp check_coincollission
+
+        exit_coincollission2: ret
+
+        check_coincollission:
         
-        mov si, 0
-        mov cx, 5
-        check_coinobstacle:
-            push si
-            
-            mov ax, coinx
-            add ax, coinsize
-            cmp ax, obs_xpos[si]
-            jng exit_coinobstacle
+        mov ax, char_x
+        add ax, char_size
+        cmp ax, coinx
+        jng exit_coincollission2
 
-            mov ax, obs_xpos[si]
-            add ax, coinsize
-            cmp coinx, ax
-            jnl exit_coinobstacle
+        mov ax, coinx
+        add ax, char_size
+        cmp char_x, ax
+        jnl exit_coin_collission
 
-            mov ax, coiny
-            add ax, coinsize
-            cmp ax, obs_ypos[si]
-            jng exit_coinobstacle
+        mov ax, char_y
+        add ax, char_size
+        cmp ax, coiny
+        jng exit_coin_collission
 
-            mov ax, obs_ypos[si]
-            add ax, coinsize
-            cmp coiny, ax
-            jnl exit_coinobstacle
+        mov ax, coiny
+        add ax, char_size
+        cmp char_y, ax
+        jnl exit_coin_collission
 
-            ;if collission is true
-            mov coin_state, 0         ;set coin state to inactive
+        ;if collission is true, set state to cooldown
+        cmp coin_state, 2
+        jne exit_coin_collission
 
-        ;if false
-        exit_coinobstacle:
-            add si, 2
-            loop check_coinobstacle
-            pop si
+        call increment_score
+
+        cmp coin_value, 5
+        je add_5points
+
+        cmp coin_value, 10
+        je add_10points
+
+        cmp coin_value, 20
+        je add_20points
+
+        add_5points:
+            add score_ones, 5
+            mov coin_state, 3
+            jmp exit_coin_collission
+        add_10points:
+            add score_tens, 1
+            mov coin_state, 3
+            jmp exit_coin_collission
+        add_20points:
+            add score_tens, 2
+            mov coin_state, 3
+            jmp exit_coin_collission
+
+        exit_coin_collission:   
+            call calculate_overallscore
             ret
     coin_collission endp
 
     update_coinvalue proc near
-        cmp coin_state, 0
-        jne exit_update_coinvalue
-        mov coin_state, 1
+        call calculate_overallscore
+        cmp score_overallhex, 100
+        jl set_coinsilver
+
+        cmp score_overallhex, 250
+        jl set_coingold
+
+        cmp score_overallhex, 999
+        jl set_coinruby
+
+        set_coinsilver:
+            mov coin_value, 5
+            ret
+
+        set_coingold:
+            mov coin_value, 10
+            ret
+
+        set_coinruby:
+            mov coin_value, 20
+            ret
 
         exit_update_coinvalue:  ret
     update_coinvalue endp
+
+    update_coinactive proc near
+        cmp coin_state, 0
+        jne exit_update_coinactive
+        
+        mov coin_state, 1
+        exit_update_coinactive: ret
+    update_coinactive endp
 
     render_coin proc near
         cmp coin_state, 2
@@ -591,14 +645,26 @@ org 0100h
 
     move_coin proc near
         cmp coin_state, 1                   ;activating, determining where to position coin
-        je coin_activating
+        jne move_coincondition2
+        jmp coin_activating
+
+        move_coincondition2:
         cmp coin_state, 2                   ;active, is now moving downwards
-        jne exit_movecoin
-        jmp coin_descending                  ;inactive, exit move_coin func
+        jne move_coincondition3
+        jmp coin_descending
+
+        move_coincondition3:
+        cmp coin_state, 3                   ;cooldown, moving down still
+        jne exit_movecoin                   ;inactive, exit move_coin func
+        jmp coin_descending
 
         exit_movecoin:  ret
 
         coin_activating:
+            mov si, obsy_address
+            mov ax, obs_xpos[si] 
+            mov coinx, ax
+            
             mov si, 0
             mov cx, 5
             loop_coinassign:
@@ -1896,6 +1962,7 @@ org 0100h
             je exit_checktick
 
             mov prevtime, dh
+            mov current_seconds, dh
             call increment_score
 
         exit_checktick:
@@ -2015,43 +2082,48 @@ org 0100h
     move_enemy endp
 
     update_difficulty proc near         ;to be optimized
+        call calculate_overallscore
         mov si, 0 
-        ;score conditions for difficulties
-        ;easy difficulty (score < 20)
-        cmp score_tens, 2
-        jl easydiff
-
-        ;medium difficulty (20 <= score < 50)
-        cmp score_tens, 5
+        ;score conditions for active obstacle
+        cmp score_overallhex, 20
+        jl lowdiff
+        cmp score_overallhex, 60
         jl mediumdiff
-
-        ;hard difficulty (score >= 50)
-        cmp score_tens, 9
-        jle harddiff              ; if score >= *8*, exit
-
-        jmp exit_updatediff                    
-        ;score conditions for difficulties
-
-        easydiff:
-            mov difficulty, 0
+        cmp score_overallhex, 100
+        jl intermediatediff
+        cmp score_overallhex, 300
+        jl harddiff
+        jmp extremediff
+        exit_updatediff:    ret
+        lowdiff:
             mov .obs_activetemp[si+0], 1
             mov .obs_activetemp[si+2], 0
             mov .obs_activetemp[si+4], 0
             mov .obs_activetemp[si+6], 0
             mov .obs_activetemp[si+8], 0
             jmp beginupdate
-
         mediumdiff:
-            mov difficulty, 1
+            mov .obs_activetemp[si+0], 1
+            mov .obs_activetemp[si+2], 0
+            mov .obs_activetemp[si+4], 0
+            mov .obs_activetemp[si+6], 1
+            mov .obs_activetemp[si+8], 0
+            jmp beginupdate
+        intermediatediff:
             mov .obs_activetemp[si+0], 1
             mov .obs_activetemp[si+2], 0
             mov .obs_activetemp[si+4], 1
             mov .obs_activetemp[si+6], 0
             mov .obs_activetemp[si+8], 1
             jmp beginupdate
-
         harddiff:
-            mov difficulty, 2
+            mov .obs_activetemp[si+0], 1
+            mov .obs_activetemp[si+2], 1
+            mov .obs_activetemp[si+4], 0
+            mov .obs_activetemp[si+6], 1
+            mov .obs_activetemp[si+8], 1
+            jmp beginupdate
+        extremediff:
             mov .obs_activetemp[si+0], 1
             mov .obs_activetemp[si+2], 1
             mov .obs_activetemp[si+4], 1
@@ -2072,11 +2144,25 @@ org 0100h
             add si, 2                    ; Move to the next pair of positions (si+2)
             loop updateactive            ; Loop until CX decrements to 0
 
-        exit_updatediff:
+        
             ret
     update_difficulty endp
 
-    update_enemydifficulty proc
+    calculate_overallscore proc near
+    	cmp score_ones, 10
+   	    jl check_tens
+    	sub score_ones, 10
+    	inc score_tens
+        check_tens:
+    	cmp score_tens, 10
+    	jl check_hund
+    	sub score_tens, 10
+    	inc score_hund
+        check_hund:
+    	cmp score_hund, 10
+    	jl exit_adjust
+        
+        exit_adjust:
         xor ax, ax          ; reset ax register to 0
         mov score_overallhex, ax
         mov al, score_ones
@@ -2091,14 +2177,17 @@ org 0100h
         mov bl, 100
         mul bl
         add score_overallhex, ax
+        ret
+    calculate_overallscore endp
 
-
+    update_enemydifficulty proc
         cmp enemy_state, 0
         jne exit_updatteenemy
         cmp icicle_state, 0
         jne exit_updatteenemy
 
         update_enemy:
+            call calculate_overallscore
             mov enemy_interval, 10
             mov ax, score_overallhex        ; Load score_tens into AX
             mov bx, enemy_interval    ; Load enemy_interval into BL
@@ -2355,7 +2444,7 @@ org 0100h
         mov ah, 09h
         mov dx, offset line5_game       ;score
         int 21h
-
+        call calculate_overallscore
         mov ah, 02h
         mov dh, 0eh
         mov dl, 02h
@@ -2809,12 +2898,10 @@ org 0100h
     	cmp score_tens, 10
     	jl exit_increment
 
-    	mov score_tens, 0
+    	sub score_tens, 10
     	inc score_hund
     	cmp score_hund, 10
     	jl exit_increment
-
-    	mov score_hund, 0
     
     	exit_increment:
             
