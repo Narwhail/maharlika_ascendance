@@ -28,6 +28,11 @@
     line2_pg3 db "and falling icicles!", "$"    ;20
     line1_pg4 db "Obstacles increase", "$"      ;18
     line2_pg4 db "as you score!", "$"           ;13
+    line1_pg5 db "5 points", "$" ;8
+    line2_pg5 db "10 points", "$" ;9
+    line3_pg5 db "20 points", "$" ;9
+    line4_pg5 db "Keep an eye for coins", "$" ;21
+    line5_pg5 db "to gain more points!", "$" ;20
     line3_tutorial db "[e] menu", "$"           ;8
 
     ;game variables
@@ -42,6 +47,7 @@
     score_tens db 0
     score_hund db 0
     score_rate db 1
+    score_overallhex dw 0
     rendercoordX dw 0
     rendercoordY dw 0
     _rendersizeX dw 0
@@ -67,10 +73,20 @@
     enemy_x dw 202
     enemy_y dw 9
     enemy_state db 0           ;0 = inactive, 1 = descending, 2 = activating, 3 = ascending
+    enemy_interval dw 0
     icicle_state db 0          ;0 = inactive, 1 = tracking, 2 = active  (will automatically turn inactive once it reaches the bottom limit)
     iciclex dw ?
     icicley dw 8
     icicle_velocity dw 5
+
+    ;coin variables
+    coinx dw 0
+    coiny dw 0
+    coinsize dw 8
+    tempcoinx dw 0
+    coin_state dw 2
+    coin_value dw 20
+    obsy_address dw 0
 
     ;tower
     menutowerx dw 215
@@ -81,7 +97,6 @@
     towerx dw 151
 
     ;obstacle
-    obstaclex dw 183, 183, 183, 183, 183
     obs_xpos dw 183, 183, 183, 183, 183                 ;address is by 2 ie. 0,2,4,6,8
     obs_ypos dw 23, 55, 87, 119, 151                    ;address is by 2 ie. 0,2,4,6,8
     obsfixedxpos_state dw 0                             ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
@@ -91,16 +106,35 @@
 
     ;sprites
 
-    coin db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h ;10x10
-         db 00h, 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h
-         db 00h, 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
-         db 00h, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
-         db 00h, 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
-         db 00h, 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
-         db 00h, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
-         db 00h, 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
-         db 00h, 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h
-         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+    coin db 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h     ;9x9 
+         db 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
+         db 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
+         db 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
+         db 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
+         db 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
+         db 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
+         db 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h
+         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+    coinsilver  db 00h, 00h, 1Ah, 1Ah, 1Ah, 1Ah, 00h, 00h, 00h  ;9x9
+                db 00h, 1Ah, 1Ah, 17h, 17h, 1Ah, 1Ah, 00h, 00h
+                db 1Ah, 1Ah, 17h, 1Ah, 1Ah, 17h, 1Ah, 1Ah, 00h
+                db 1Ah, 17h, 1Ah, 1Ah, 1Ah, 1Ah, 17h, 1Ah, 00h
+                db 1Ah, 17h, 1Ah, 1Ah, 1Ah, 1Ah, 17h, 1Ah, 00h
+                db 1Ah, 1Ah, 17h, 1Ah, 1Ah, 17h, 1Ah, 1Ah, 00h
+                db 00h, 1Ah, 1Ah, 17h, 17h, 1Ah, 1Ah, 00h, 00h
+                db 00h, 00h, 1Ah, 1Ah, 1Ah, 1Ah, 00h, 00h, 00h
+                db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+    coinruby db 00h, 00h, 28h, 28h, 28h, 28h, 00h, 00h, 00h ;9x9
+             db 00h, 28h, 28h, 04h, 04h, 28h, 28h, 00h, 00h
+             db 28h, 28h, 04h, 28h, 28h, 04h, 28h, 28h, 00h
+             db 28h, 04h, 28h, 28h, 28h, 28h, 04h, 28h, 00h
+             db 28h, 04h, 28h, 28h, 28h, 28h, 04h, 28h, 00h
+             db 28h, 28h, 04h, 28h, 28h, 04h, 28h, 28h, 00h
+             db 00h, 28h, 28h, 04h, 04h, 28h, 28h, 00h, 00h
+             db 00h, 00h, 28h, 28h, 28h, 28h, 00h, 00h, 00h
+             db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
     icicle  db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h    ;10x15
             db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h
@@ -411,6 +445,7 @@ org 0100h
             call render_menutower
             call menu_input
             mov enemy_state, 1
+            mov coin_state, 1
             
             call check_state
         playing_game:
@@ -422,13 +457,18 @@ org 0100h
             call move_obstacle
             call move_enemy
             call move_icicle
+            call move_coin
+            call update_coinvalue
+            ;call coin_collission
             call playinggame_printtext
             call render_gametower
             call render_char
             call render_obstacle
             call render_icicle
             call render_enemy
+            call render_coin
             call check_collission
+            call update_enemydifficulty
             
             call check_state
         game_over:
@@ -446,6 +486,192 @@ org 0100h
             call tutorial_input               ; same din dito
             call check_state
     main endp
+
+    coin_collission proc
+        
+        mov si, 0
+        mov cx, 5
+        check_coinobstacle:
+            push si
+            
+            mov ax, coinx
+            add ax, coinsize
+            cmp ax, obs_xpos[si]
+            jng exit_coinobstacle
+
+            mov ax, obs_xpos[si]
+            add ax, coinsize
+            cmp coinx, ax
+            jnl exit_coinobstacle
+
+            mov ax, coiny
+            add ax, coinsize
+            cmp ax, obs_ypos[si]
+            jng exit_coinobstacle
+
+            mov ax, obs_ypos[si]
+            add ax, coinsize
+            cmp coiny, ax
+            jnl exit_coinobstacle
+
+            ;if collission is true
+            mov coin_state, 0         ;set coin state to inactive
+
+        ;if false
+        exit_coinobstacle:
+            add si, 2
+            loop check_coinobstacle
+            pop si
+            ret
+    coin_collission endp
+
+    update_coinvalue proc near
+        cmp coin_state, 0
+        jne exit_update_coinvalue
+        mov coin_state, 1
+
+        exit_update_coinvalue:  ret
+    update_coinvalue endp
+
+    render_coin proc near
+        cmp coin_state, 2
+        jne exit_rendercoin
+        
+        cmp coin_value, 5
+        je render_silvercoin
+
+        cmp coin_value, 10
+        je render_goldcoin
+
+        cmp coin_value, 20
+        je render_rubycoin
+
+        jmp exit_rendercoin
+
+        exit_rendercoin:    ret
+        render_silvercoin:
+            mov si, offset coinsilver           ;tileset array, will refer for color to print
+            mov ax, coinx
+            add ax, 4
+            mov rendercoordX, ax             ;x coord
+            mov ax, coiny
+            add ax, 4
+            mov rendercoordY, ax            ;y coord
+            mov _rendersizeX, 9            ;x size
+            mov _rendersizeY, 9            ;y size
+            call _rendersprite
+            ret
+            
+        render_goldcoin:
+            mov si, offset coin           ;tileset array, will refer for color to print
+            mov ax, coinx
+            add ax, 4
+            mov rendercoordX, ax             ;x coord
+            mov ax, coiny
+            add ax, 4
+            mov rendercoordY, ax            ;y coord
+            mov _rendersizeX, 9            ;x size
+            mov _rendersizeY, 9            ;y size
+            call _rendersprite
+            ret
+
+        render_rubycoin:
+            mov si, offset coinruby           ;tileset array, will refer for color to print
+            mov ax, coinx
+            add ax, 4
+            mov rendercoordX, ax             ;x coord
+            mov ax, coiny
+            add ax, 4
+            mov rendercoordY, ax            ;y coord
+            mov _rendersizeX, 9            ;x size
+            mov _rendersizeY, 9            ;y size
+            call _rendersprite
+            ret
+    render_coin endp
+
+    move_coin proc near
+        cmp coin_state, 1                   ;activating, determining where to position coin
+        je coin_activating
+        cmp coin_state, 2                   ;active, is now moving downwards
+        jne exit_movecoin
+        jmp coin_descending                  ;inactive, exit move_coin func
+
+        exit_movecoin:  ret
+
+        coin_activating:
+            mov si, 0
+            mov cx, 5
+            loop_coinassign:
+                mov ax, obs_ypos[si]
+                cmp ax, 23                   ;compare if an obstacle(obs_ypos[si]) is at the top
+                jne check_nextcoinassign
+                mov ax, si
+                mov obsy_address, ax
+                mov ax, obs_ypos[si]        ;coiny = obs_ypos[si]
+                mov coiny, ax
+                mov ax, obs_xpos[si]        ;coinx = obs_xpos[si]
+                mov coinx, ax
+                check_nextcoinassign:
+                    add si, 2
+                    loop loop_coinassign
+                    mov si, 0
+
+            assign_coinx:
+                call nurng                  ;generate randomNum
+                cmp randomNum, 1
+                je coin_position1
+                cmp randomNum, 2
+                je coin_position2
+                cmp randomNum, 3
+                je coin_position3
+                cmp randomNum, 4
+                je coin_position4
+                jmp assign_coinx            ;if no conditions satisfied
+
+                mov si, obsy_address
+                coin_position1:
+                    mov coinx, 135
+                    mov ax, obs_xpos[si]
+                    cmp coinx, ax
+                    je coin_position2
+                    jmp check_tempcoinx
+                coin_position2:
+                    mov coinx, 182
+                    mov ax, obs_xpos[si]
+                    cmp coinx, ax
+                    je coin_position3
+                    jmp check_tempcoinx
+                coin_position3:
+                    mov coinx, 223
+                    mov ax, obs_xpos[si]
+                    cmp coinx, ax
+                    je coin_position4
+                    jmp check_tempcoinx
+                coin_position4:
+                    mov coinx, 270
+                    mov ax, obs_xpos[si]
+                    cmp coinx, ax
+                    je coin_position1
+                    jmp check_tempcoinx
+
+                check_tempcoinx:            ;go to assign_coinx if it overlaps with an obstacle
+                    mov coin_state, 2
+
+        coin_descending:
+            mov si, obsy_address
+            mov ax, obs_ypos[si]
+            mov coiny, ax
+            mov ax, y_bottomlimit
+            cmp coiny, ax
+            jng exit_coindescending
+            mov coin_state, 0
+            mov coiny, 0
+            mov coinx, 0
+
+            exit_coindescending:
+            mov si, 0
+            ret
+    move_coin endp
 
     render_chardeathanimation proc near
         mov ah, 2ch
@@ -563,8 +789,13 @@ org 0100h
 
         checkpage4:
         cmp tutorial_page, 4
-        jne exit_tutprintscreen
+        jne checkpage5
         jmp page4
+
+        checkpage5:
+        cmp tutorial_page, 5
+        jne exit_tutprintscreen
+        jmp page5
 
         exit_tutprintscreen:    ret
         page1:
@@ -641,20 +872,20 @@ org 0100h
             ; navigation bar
             mov ah, 02h     
             mov bh, 00h     
-            mov dh, 21    
-            mov dl, 18     
+            mov dh, 21   
+            mov dl, 17     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 07h              ;character to print - solid circle
             mov bh, 0          
             mov bl, 0ah             ;color
-            mov cx, 4
+            mov cx, 5
             int 10h
 
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 18     
+            mov dl, 17     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 09h              ;character to print - blank circle
@@ -759,7 +990,7 @@ org 0100h
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 16     
+            mov dl, 15     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 1bh              ;character to print - left arrow
@@ -770,20 +1001,20 @@ org 0100h
 
             mov ah, 02h     
             mov bh, 00h     
-            mov dh, 21    
-            mov dl, 18     
+            mov dh, 21   
+            mov dl, 17     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 07h              ;character to print - solid circle
             mov bh, 0          
             mov bl, 0ah             ;color
-            mov cx, 4
+            mov cx, 5
             int 10h
 
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 19     
+            mov dl, 18     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 09h              ;character to print - blank circle
@@ -921,7 +1152,7 @@ org 0100h
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 16     
+            mov dl, 15     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 1bh              ;character to print - left arrow
@@ -933,19 +1164,19 @@ org 0100h
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 18     
+            mov dl, 17     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 07h              ;character to print - solid circle
             mov bh, 0          
             mov bl, 0ah             ;color
-            mov cx, 4
+            mov cx, 5
             int 10h
 
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 20     
+            mov dl, 19     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 09h              ;character to print - blank circle
@@ -1063,7 +1294,7 @@ org 0100h
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 16     
+            mov dl, 15     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 1bh              ;character to print - left arrow
@@ -1075,13 +1306,134 @@ org 0100h
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
-            mov dl, 18     
+            mov dl, 17     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 07h              ;character to print - solid circle
             mov bh, 0          
             mov bl, 0ah             ;color
-            mov cx, 4
+            mov cx, 5
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 20     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 09h              ;character to print - blank circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 23     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1ah              ;character to print - right arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+            ret
+
+        page5:
+            mov si, offset coinsilver       ;silver coin
+            mov rendercoordX, 119
+            mov rendercoordY, 63
+            mov _rendersizeX, 9
+            mov _rendersizeY, 9
+            call _rendersprite
+
+            mov si, offset coin       ;gold coin
+            mov rendercoordX, 119
+            mov rendercoordY, 79
+            mov _rendersizeX, 9
+            mov _rendersizeY, 9
+            call _rendersprite
+
+            mov si, offset coinruby       ;ruby coin
+            mov rendercoordX, 119
+            mov rendercoordY, 95
+            mov _rendersizeX, 9
+            mov _rendersizeY, 9
+            call _rendersprite
+
+            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov _stringx, 10
+            mov _stringy, 2
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line1_pg5       ;5 points
+            mov _stringx, 17
+            mov _stringy, 8
+            mov _stringcolor, 0fh
+            mov _stringlength, 8
+            call _printtext
+
+            mov bp, offset line2_pg5       ;10 points
+            mov _stringx, 17
+            mov _stringy, 10
+            mov _stringcolor, 0fh
+            mov _stringlength, 9
+            call _printtext
+
+            mov bp, offset line3_pg5       ;20 points
+            mov _stringx, 17
+            mov _stringy, 12
+            mov _stringcolor, 0fh
+            mov _stringlength, 9
+            call _printtext
+
+            mov bp, offset line4_pg5        ;Keep an eye for coins
+            mov _stringx, 10
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 21
+            call _printtext
+
+            mov bp, offset line5_pg5        ;to gain more points!
+            mov _stringx, 10
+            mov _stringy, 19
+            mov _stringcolor, 0fh
+            mov _stringlength, 20
+            call _printtext
+
+            mov bp, offset line3_tutorial        ;[e] menu
+            mov _stringx, 16
+            mov _stringy, 23
+            mov _stringcolor, 0eh
+            mov _stringlength, 8
+            call _printtext
+
+            ; navigation bar
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21    
+            mov dl, 15     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 1bh              ;character to print - left arrow
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 1
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 21  
+            mov dl, 17     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 07h              ;character to print - solid circle
+            mov bh, 0          
+            mov bl, 0ah             ;color
+            mov cx, 5
             int 10h
 
             mov ah, 02h     
@@ -1125,7 +1477,7 @@ org 0100h
             dec tutorial_page
             ret
         d_keyinput:
-            cmp tutorial_page, 4
+            cmp tutorial_page, 5
             je tutorial_input
             inc tutorial_page
             ret
@@ -1184,6 +1536,33 @@ org 0100h
         mov _stringcolor, 0eh
         mov _stringlength, 12
         call _printtext   
+
+
+        ;box
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 02    
+            mov dl, 08     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 05fh          ;character to print - solid line
+            mov bh, 0          
+            mov bl, 0fh             ;color
+            mov cx, 24
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 05    
+            mov dl, 08     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 05fh          ;character to print - solid line
+            mov bh, 0          
+            mov bl, 0fh             ;color
+            mov cx, 24
+            int 10h  
+            
         ret
     menuscreen_printtext endp
 
@@ -1694,22 +2073,45 @@ org 0100h
             loop updateactive            ; Loop until CX decrements to 0
 
         exit_updatediff:
-            cmp enemy_state, 0
-            je update_enemy
-            ret
-
-        ;--------------->UPDATING ENEMY DIFFICULTY<------------------
-        update_enemy:
-            cmp score_ones, 0
-            jne not_equal
-            cmp icicle_state, 0
-            jne not_equal
-            mov enemy_state, 1
-            ret
-
-        not_equal:
             ret
     update_difficulty endp
+
+    update_enemydifficulty proc
+        xor ax, ax          ; reset ax register to 0
+        mov score_overallhex, ax
+        mov al, score_ones
+        add score_overallhex, ax
+        xor ax, ax          ; reset ax register to 0
+        mov al, score_tens
+        mov bl, 10
+        mul bl
+        add score_overallhex, ax
+        xor ax, ax          ; reset ax register to 0
+        mov al, score_hund
+        mov bl, 100
+        mul bl
+        add score_overallhex, ax
+
+
+        cmp enemy_state, 0
+        jne exit_updatteenemy
+        cmp icicle_state, 0
+        jne exit_updatteenemy
+
+        update_enemy:
+            mov enemy_interval, 10
+            mov ax, score_overallhex        ; Load score_tens into AX
+            mov bx, enemy_interval    ; Load enemy_interval into BL
+
+            xor dx, dx                ; Clear DX for division
+            div bx                    ; Divide AX by BL, quotient in AL, remainder in DX
+            cmp dx, 0
+            jne exit_updatteenemy
+            mov enemy_state, 1        ; Set enemy state to 1
+            ret
+        exit_updatteenemy:  ret
+    update_enemydifficulty endp
+
 
     ; _update_obsXpos must be called after value in randomNum is called to change the obstacles x position
     _update_obsXpos proc near
@@ -1845,22 +2247,22 @@ org 0100h
             mov si, offset coin
             mov rendercoordX, 136
             mov rendercoordY, 80
-            mov _rendersizeX, 10
-            mov _rendersizeY, 10
+            mov _rendersizeX, 9
+            mov _rendersizeY, 9
             call _rendersprite
 
             mov si, offset coin
             mov rendercoordX, 148
             mov rendercoordY, 80
-            mov _rendersizeX, 10
-            mov _rendersizeY, 10
+            mov _rendersizeX, 9
+            mov _rendersizeY, 9
             call _rendersprite
 
             mov si, offset coin
             mov rendercoordX, 160
             mov rendercoordY, 80
-            mov _rendersizeX, 10
-            mov _rendersizeY, 10
+            mov _rendersizeX, 9
+            mov _rendersizeY, 9
             call _rendersprite
 
             mov si, offset Player_up
@@ -1873,6 +2275,31 @@ org 0100h
 
 
     gameover_printtext proc near        
+            ;box
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 02    
+            mov dl, 13     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 05fh          ;character to print - solid line
+            mov bh, 0          
+            mov bl, 0fh             ;color
+            mov cx, 14
+            int 10h
+
+            mov ah, 02h     
+            mov bh, 00h     
+            mov dh, 05    
+            mov dl, 13     
+            int 10h
+            mov ah, 09h             ;config for writing text with color
+            mov al, 05fh          ;character to print - solid line
+            mov bh, 0          
+            mov bl, 0fh             ;color
+            mov cx, 14
+            int 10h 
+
             mov bp, offset line1_over        ;game over...
             mov _stringx, 14
             mov _stringy, 4
@@ -2390,6 +2817,7 @@ org 0100h
     	mov score_hund, 0
     
     	exit_increment:
+            
             ret
     increment_score endp
 
