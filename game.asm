@@ -12,13 +12,13 @@
     line5_game db "Score:" ,"$"
     blank_game db "   " ,"$"
     ;gameover state
-    line1_over db "GAME OVER", "$"
+    line1_over db "Game Over...", "$"
     line2_over db "Score: ", "$"
-    line3_over db "Press any key to return to menu", "$"
+    line3_over db "Press 'R' to return to menu", "$"
     ;menu state
     line1_menu db "MAHARLIKA ASCENDANCE", "$"   ;20
-    line3_menu db "Press 'S' to Start", "$"
-    line4_menu db "Press 'T' for Tutorial", "$"
+    line3_menu db "[s] Start playing", "$"
+    line4_menu db "[t] Tutorial", "$"
     ;tutorial state
     line1_pg1 db "Use 'wasd' to move", "$"      ;18
     line2_pg1 db "your character!", "$"         ;15
@@ -90,6 +90,18 @@
     difficulty db 0                                     ;0 = easy, 1 = medium, 2 = hard
 
     ;sprites
+
+    coin db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h ;10x10
+         db 00h, 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h
+         db 00h, 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
+         db 00h, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
+         db 00h, 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
+         db 00h, 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
+         db 00h, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
+         db 00h, 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
+         db 00h, 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h
+         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
     icicle  db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h    ;10x15
             db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h
             db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
@@ -105,6 +117,23 @@
             db 00h, 00h, 00h, 00h, 36h, 00h, 00h, 00h, 00h, 00h
             db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
             db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+    
+    Player_up  db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h    ;17x17
+               db 00h, 00h, 00h, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 2Fh, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+               db 00h, 2Fh, 00h, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h, 2Fh, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h
+               db 00h, 00h, 00h, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 00h, 00h
+               db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 00h
+               db 00h, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 00h, 00h
+               db 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h
     
     Player_left     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
                     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h
@@ -405,6 +434,7 @@ org 0100h
         game_over:
             call render_chardeathanimation
             call clear_screen
+            call gameover_rendersprite
             call gameover_printtext
             call generateseed
             call gameover_input         ;check for input
@@ -540,42 +570,42 @@ org 0100h
         page1:
             mov si, offset Player_left
             mov rendercoordX, 128
-            mov rendercoordY, 87
+            mov rendercoordY, 79
             mov _rendersizeX, 17
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 56
+            mov rendercoordY, 48
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 72
+            mov rendercoordY, 64
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg2
             mov rendercoordX, 144
-            mov rendercoordY, 88
+            mov rendercoordY, 80
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
         
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 104
+            mov rendercoordY, 96
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 120
+            mov rendercoordY, 112
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
@@ -649,49 +679,49 @@ org 0100h
         page2:
             mov si, offset Player_right
             mov rendercoordX, 176
-            mov rendercoordY, 103
+            mov rendercoordY, 95
             mov _rendersizeX, 17
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 56
+            mov rendercoordY, 48
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 72
+            mov rendercoordY, 64
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg2
             mov rendercoordX, 144
-            mov rendercoordY, 88
+            mov rendercoordY, 80
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
         
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 104
+            mov rendercoordY, 96
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 120
+            mov rendercoordY, 112
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset obstacle_left
             mov rendercoordX, 128
-            mov rendercoordY, 95
+            mov rendercoordY, 87
             mov _rendersizeX, 18
             mov _rendersizeY, 17
             call _rendersprite
@@ -778,63 +808,63 @@ org 0100h
         page3:
             mov si, offset Player_left
             mov rendercoordX, 128
-            mov rendercoordY, 103
+            mov rendercoordY, 95
             mov _rendersizeX, 17
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset enemy
             mov rendercoordX, 195
-            mov rendercoordY, 60
+            mov rendercoordY, 52
             mov _rendersizeX, 17
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 56
+            mov rendercoordY, 48
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 72
+            mov rendercoordY, 64
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg2
             mov rendercoordX, 144
-            mov rendercoordY, 88
+            mov rendercoordY, 80
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
         
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 104
+            mov rendercoordY, 96
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 120
+            mov rendercoordY, 112
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset obstacle_right
             mov rendercoordX, 175
-            mov rendercoordY, 79
+            mov rendercoordY, 71
             mov _rendersizeX, 18
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset icicle
             mov rendercoordX, 132
-            mov rendercoordY, 48
+            mov rendercoordY, 40
             mov _rendersizeX, 10
             mov _rendersizeY, 15
             call _rendersprite
@@ -849,7 +879,7 @@ org 0100h
             ; enemy exclamation
             mov ah, 02h     
             mov bh, 0     
-            mov dh, 6              
+            mov dh, 5              
             mov dl, 25          
             int 10h 
 
@@ -940,63 +970,63 @@ org 0100h
         page4:
             mov si, offset Player_right
             mov rendercoordX, 176
-            mov rendercoordY, 87
+            mov rendercoordY, 79
             mov _rendersizeX, 17
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 56
+            mov rendercoordY, 48
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 72
+            mov rendercoordY, 64
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg2
             mov rendercoordX, 144
-            mov rendercoordY, 88
+            mov rendercoordY, 80
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
         
             mov si, offset ingame_towerseg3
             mov rendercoordX, 144
-            mov rendercoordY, 104
+            mov rendercoordY, 96
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset ingame_towerseg1
             mov rendercoordX, 144
-            mov rendercoordY, 120
+            mov rendercoordY, 112
             mov _rendersizeX, 33
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset obstacle_right
             mov rendercoordX, 175
-            mov rendercoordY, 63
+            mov rendercoordY, 55
             mov _rendersizeX, 18
             mov _rendersizeY, 17
             call _rendersprite
 
             mov si, offset obstacle_right
             mov rendercoordX, 175
-            mov rendercoordY, 111
+            mov rendercoordY, 103
             mov _rendersizeX, 18
             mov _rendersizeY, 17
             call _rendersprite
         
             mov si, offset obstacle_left
             mov rendercoordX, 128
-            mov rendercoordY, 87
+            mov rendercoordY, 80
             mov _rendersizeX, 18
             mov _rendersizeY, 17
             call _rendersprite
@@ -1131,34 +1161,29 @@ org 0100h
 
     menuscreen_printtext proc near
         ; Display the first line at row 4, column 5
-        mov ah, 02h     
-        mov bh, 00h     
-        mov dh, 04h    
-        mov dl, 04h     
-        int 10h         
 
-        mov ah, 09h     
-        mov dx, offset line1_menu
-        int 21h         
+	; Display the first line at row 4, column 5
+        mov bp, offset line1_menu        ;[e] menu
+        mov _stringx, 10
+        mov _stringy, 04
+        mov _stringcolor, 0fh
+        mov _stringlength, 20
+        call _printtext
 
-        ; Display the third line at row 7, column 5
-        mov ah, 02h     
-        mov dh, 07h    
-        mov dl, 04h     
-        int 10h         
+        mov bp, offset line3_menu        ;[e] menu
+        mov _stringx, 04
+        mov _stringy, 13
+        mov _stringcolor, 0eh
+        mov _stringlength, 17
+        call _printtext         
 
-        mov ah, 09h     
-        mov dx, offset line3_menu
-        int 21h   
-
-        ; Display the fourth line at row 9, column 5
-        mov ah, 02h     
-        mov dh, 09h     
-        mov dl, 04h     
-        int 10h         
-        mov ah, 09h     
-        mov dx, offset line4_menu 
-        int 21h
+        ; Display the first line at row 4, column 5
+        mov bp, offset line4_menu        ;[e] menu
+        mov _stringx, 04
+        mov _stringy, 15
+        mov _stringcolor, 0eh
+        mov _stringlength, 12
+        call _printtext   
         ret
     menuscreen_printtext endp
 
@@ -1798,10 +1823,14 @@ org 0100h
     default_gamevalue endp 
 
     gameover_input proc near
-        mov ah, 01h
-        int 16h
-        jnz gameover_keypress       ;if zero flag is false, go to _keypress        
-        jmp gameover_input          ;else keep checking for input
+        mov ah, 00h
+        int 16h                 ; get the pressed key
+        cmp al, 'r'             ; compare with 's'
+        je gameover_keypress       ; if equal, jump to keypress_detected
+        cmp al, 'R'             ; compare with 'S'
+        je gameover_keypress       ; if equal, jump to keypress_detected
+
+        jmp gameover_input          ; if no keys pressed, keep jumping to menu_input
 
         gameover_keypress:
             mov game_state, 0
@@ -1811,38 +1840,64 @@ org 0100h
             ret
     gameover_input endp
 
+
+    gameover_rendersprite proc near
+            mov si, offset coin
+            mov rendercoordX, 136
+            mov rendercoordY, 80
+            mov _rendersizeX, 10
+            mov _rendersizeY, 10
+            call _rendersprite
+
+            mov si, offset coin
+            mov rendercoordX, 148
+            mov rendercoordY, 80
+            mov _rendersizeX, 10
+            mov _rendersizeY, 10
+            call _rendersprite
+
+            mov si, offset coin
+            mov rendercoordX, 160
+            mov rendercoordY, 80
+            mov _rendersizeX, 10
+            mov _rendersizeY, 10
+            call _rendersprite
+
+            mov si, offset Player_up
+            mov rendercoordX, 144
+            mov rendercoordY, 96
+            mov _rendersizeX, 16
+            mov _rendersizeY, 16
+            call _rendersprite
+    gameover_rendersprite endp
+
+
     gameover_printtext proc near        
-        mov ah, 02h
-        mov bh, 00h         ;page position
-        mov dh, 04h         ;y position of text -> 1 hexadecimal is equivalent to 8 pixels
-        mov dl, 04h         ;x position of text -> 00h is tile one, 01h is tile two
-        int 10h
-        mov ah, 09h
-        mov dx, offset line1_over       ;smd
-        int 21h
+            mov bp, offset line1_over        ;game over...
+            mov _stringx, 14
+            mov _stringy, 4
+            mov _stringcolor, 04h
+            mov _stringlength, 12
+            call _printtext
+
+            mov bp, offset line2_over        ;score
+            mov _stringx, 15
+            mov _stringy, 16
+            mov _stringcolor, 0fh
+            mov _stringlength, 6
+            call _printtext
+
+            mov bp, offset line3_over       ;press r
+            mov _stringx, 7
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 27
+            call _printtext
 
         mov ah, 02h
-        mov bh, 00h         ;page position
-        mov dh, 07h         ;y position of text -> 1 hexadecimal is equivalent to 8 pixels
-        mov dl, 04h         ;x position of text -> 00h is tile one, 01h is tile two
-        int 10h
-        mov ah, 09h
-        mov dx, offset line2_over
-        int 21h
-
-        mov ah, 02h
-        mov dh, 07h
-        mov dl, 04h
+        mov dh, 10h
+        mov dl, 0Eh
         call .printscore
-
-        mov ah, 02h
-        mov bh, 00h         ;page position
-        mov dh, 09h         ;y position of text
-        mov dl, 04h         ;x position of text -> 00h is tile one, 01h is tile two
-        int 10h
-        mov ah, 09h
-        mov dx, offset line3_over
-        int 21h
         ret
     gameover_printtext endp
     
