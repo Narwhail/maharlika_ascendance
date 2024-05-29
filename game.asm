@@ -86,7 +86,7 @@
     coinsize dw 8
     tempcoinx dw 0
     coin_state dw 2                 ; 0 inactive, 1 activating, 2 active, 3 cooldown
-    coin_value dw 5
+    coin_value dw 1
     obsy_address dw 0
 
     ;tower
@@ -526,25 +526,25 @@ org 0100h
 
         call increment_score
 
-        cmp coin_value, 5
-        je add_5points
+        cmp coin_value, 1
+        je add_1points
 
-        cmp coin_value, 10
-        je add_10points
+        cmp coin_value, 2
+        je add_2points
 
-        cmp coin_value, 20
-        je add_20points
+        cmp coin_value, 3
+        je add_3points
 
-        add_5points:
-            add score_ones, 5
+        add_1points:
+            add score_ones, 1
             mov coin_state, 3
             jmp exit_coin_collission
-        add_10points:
-            add score_tens, 1
+        add_2points:
+            add score_ones, 2
             mov coin_state, 3
             jmp exit_coin_collission
-        add_20points:
-            add score_tens, 2
+        add_3points:
+            add score_ones, 3
             mov coin_state, 3
             jmp exit_coin_collission
 
