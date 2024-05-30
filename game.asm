@@ -62,6 +62,7 @@
     _stringlength dw 0
     tutorial_page db 1
     current_seconds db 0
+    menu_page db 1 
 
     ;character variables
     char_size dw 0fh
@@ -414,6 +415,55 @@
                         db 14h, 00h, 00h, 00h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 00h, 00h, 14h, 14h, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+    
+    RightsideBox        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+                        db 0fh, 0fh, 00h, 00h,0fh,0fh,0fh
+
+    LeftsideBox         db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+                        db 0fh,0fh,00h,00h,0fh,0fh,0fh
+
 .code
 
 org 0100h
@@ -438,11 +488,13 @@ org 0100h
             je game_over
             cmp game_state, 3
             je tutorial_screen
+            
 
         menu_screen:
             call clear_screen
             call menuscreen_printtext
             call render_menutower
+            call render_sideboxmenu
             call menu_input
             mov enemy_state, 1
             mov coin_state, 1
@@ -476,6 +528,7 @@ org 0100h
             call render_chardeathanimation
             call clear_screen
             call gameover_rendersprite
+            call render_sideboxover
             call gameover_printtext
             call generateseed
             call gameover_input         ;check for input
@@ -486,7 +539,62 @@ org 0100h
             call tutorial_printscreen         ; hanapin mo yung function nito tapos dun ka magdagdag ng code m mhiema, yung **** proc near
             call tutorial_input               ; same din dito
             call check_state
+        HighScore_Screen:
+            call clear_screen
+            call Highscore_printscreen
+            call Highscore_input
+            call check_state
     main endp
+
+        Highscore_printscreen proc near
+            mov bp, offset line2_over        ;score
+            mov _stringx, 15
+            mov _stringy, 16
+            mov _stringcolor, 0fh
+            mov _stringlength, 6
+            call _printtext
+
+            mov bp, offset line3_over       ;press r
+            mov _stringx, 7
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 27
+            call _printtext
+
+            mov ah, 02h
+            mov dh, 10h
+            mov dl, 0Eh
+            call .printscore
+            ret
+
+            Highscore_printscreen endp
+            
+
+
+        Highscore_input proc near
+            mov ah, 04h      
+            int 16h  
+
+            jz Highscore_input ; If no key pressed, loop b
+
+            mov ah, 00h
+            int 16
+            cmp al, 'e'
+            je highscore_keypress
+            cmp al, 'E'
+            je highscore_keypress
+
+            jmp Highscore_input  
+
+        highscore_keypress:
+            mov game_state, 0         
+            call default_gamevalue    
+            call generateseed         
+            call _update_obsXpos      
+            ret         
+
+            Highscore_input endp
+
 
     coin_collission proc
         ;check if char is colliding with obstacle
@@ -837,6 +945,8 @@ org 0100h
 
         exit_renderdeath:   ret
     render_chardeathanimation endp
+
+
 
     tutorial_printscreen proc near              ; prints the text and sprites need at a given page
         cmp tutorial_page, 1
@@ -1323,7 +1433,7 @@ org 0100h
         
             mov si, offset obstacle_left
             mov rendercoordX, 128
-            mov rendercoordY, 80
+            mov rendercoordY, 79
             mov _rendersizeX, 18
             mov _rendersizeY, 17
             call _rendersprite
@@ -1566,6 +1676,13 @@ org 0100h
         cmp al, 'T'
         je menu_tkeyinput
 
+        cmp al, 'h'
+        je menu_hkeyinput
+        cmp al, 'H'
+        je menu_hkeyinput
+        
+
+
         jmp menu_input          ; if no keys pressed, keep jumping to menu_input
 
         menu_skeyinput:
@@ -1574,9 +1691,18 @@ org 0100h
 
         menu_tkeyinput:
             mov game_state, 3       ;set game_state to tutorial
+        
+        menu_hkeyinput:
+            mov menu_page, 1
             ret
     menu_input endp
 
+    menu_printscreen proc near 
+
+
+    menu_printscreen endp
+
+    
     menuscreen_printtext proc near
         ; Display the first line at row 4, column 5
 
@@ -1713,6 +1839,23 @@ org 0100h
         xor si, si
         ret
     render_menutower endp
+    render_sideboxmenu proc near
+            mov si, offset RightsideBox       
+            mov rendercoordX, 64
+            mov rendercoordY, 25
+            mov _rendersizeX, 07
+            mov _rendersizeY, 23
+            call _rendersprite
+
+            mov si, offset LeftsideBox      
+            mov rendercoordX, 250
+            mov rendercoordY, 25
+            mov _rendersizeX, 07
+            mov _rendersizeY, 23
+            call _rendersprite
+
+     render_sideboxmenu endp
+
 
     render_icicle proc near
         ; icicle has 3 states. 0 for inactive, 1 for tracking, 2 for active
@@ -2362,31 +2505,48 @@ org 0100h
             call _rendersprite
     gameover_rendersprite endp
 
+    render_sideboxover proc near
+            mov si, offset RightsideBox       
+            mov rendercoordX, 93
+            mov rendercoordY, 25
+            mov _rendersizeX, 07
+            mov _rendersizeY, 23
+            call _rendersprite
+
+            mov si, offset LeftsideBox      
+            mov rendercoordX, 220
+            mov rendercoordY, 25
+            mov _rendersizeX, 07
+            mov _rendersizeY, 23
+            call _rendersprite
+        
+    render_sideboxover endp
+
 
     gameover_printtext proc near        
             ;box
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 02    
-            mov dl, 13     
+            mov dl, 12     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 05fh          ;character to print - solid line
             mov bh, 0          
             mov bl, 0fh             ;color
-            mov cx, 14
+            mov cx, 16
             int 10h
 
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 05    
-            mov dl, 13     
+            mov dl, 12     
             int 10h
             mov ah, 09h             ;config for writing text with color
             mov al, 05fh          ;character to print - solid line
             mov bh, 0          
             mov bl, 0fh             ;color
-            mov cx, 14
+            mov cx, 16
             int 10h 
 
             mov bp, offset line1_over        ;game over...
