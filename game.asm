@@ -79,20 +79,20 @@
     enemy_x dw 202
     enemy_y dw 9
     enemy_state db 0           ;0 = inactive, 1 = descending, 2 = activating, 3 = ascending
-    enemy_interval dw 0
+    enemy_interval db 10
     icicle_state db 0          ;0 = inactive, 1 = tracking, 2 = active  (will automatically turn inactive once it reaches the bottom limit)
     iciclex dw ?
     icicley dw 8
-    icicle_velocity dw 5
+    icicle_velocity dw 4
 
     ;coin variables
     coinx dw 0
     coiny dw 0
     coinsize dw 8
     tempcoinx dw 0
-    coin_state dw 2                 ; 0 inactive, 1 activating, 2 active, 3 cooldown
+    coin_state dw 0                 ; 0 inactive, 1 activating, 2 active, 3 cooldown
     coin_value dw 1
-    obsy_address dw 0
+    coin_interval db 0
 
     ;tower
     menutowerx dw 215
@@ -499,8 +499,6 @@ org 0100h
             call render_menutower
             call render_sideboxmenu
             call menu_input
-            mov enemy_state, 1
-            mov coin_state, 1
             
             call check_state
         playing_game:
@@ -590,8 +588,8 @@ org 0100h
         cmp coin_value, 2
         je add_2points
 
-        cmp coin_value, 3
-        je add_3points
+        cmp coin_value, 5
+        je add_5points
 
         add_1points:
             add score_ones, 1
@@ -601,8 +599,8 @@ org 0100h
             add score_ones, 2
             mov coin_state, 3
             jmp exit_coin_collission
-        add_3points:
-            add score_ones, 3
+        add_5points:
+            add score_ones, 5
             mov coin_state, 3
             jmp exit_coin_collission
 
@@ -616,22 +614,25 @@ org 0100h
         cmp score_overallhex, 100
         jl set_coinsilver
 
-        cmp score_overallhex, 250
+        cmp score_overallhex, 200
         jl set_coingold
 
         cmp score_overallhex, 999
         jl set_coinruby
 
         set_coinsilver:
-            mov coin_value, 5
+            mov coin_value, 1
+            mov coin_interval, 1
             ret
 
         set_coingold:
-            mov coin_value, 10
-            ret
+            mov coin_value, 2
+            mov coin_interval, 2
+            ret 
 
         set_coinruby:
-            mov coin_value, 20
+            mov coin_value, 5
+            mov coin_interval, 4
             ret
 
         exit_update_coinvalue:  ret
@@ -641,7 +642,16 @@ org 0100h
         cmp coin_state, 0
         jne exit_update_coinactive
         
+        mov ah, 2ch
+        int 21h
+        xor ax, ax
+        mov al, dh                  ;dh contains seconds
+        mov bl, coin_interval       ;divisor, interval
+        div bl                      ;divide current seconds to bl then save it to ax, ah contains remainer, al contains quotient
+        cmp ah, 0                   ;compare remainder
+        jne exit_update_coinactive
         mov coin_state, 1
+
         exit_update_coinactive: ret
     update_coinactive endp
 
@@ -649,13 +659,13 @@ org 0100h
         cmp coin_state, 2
         jne exit_rendercoin
         
-        cmp coin_value, 5
+        cmp coin_value, 1
         je render_silvercoin
 
-        cmp coin_value, 10
+        cmp coin_value, 2
         je render_goldcoin
 
-        cmp coin_value, 20
+        cmp coin_value, 5
         je render_rubycoin
 
         jmp exit_rendercoin
@@ -719,26 +729,17 @@ org 0100h
         exit_movecoin:  ret
 
         coin_activating:
-            mov si, obsy_address
-            mov ax, obs_xpos[si] 
-            mov coinx, ax
-            
             mov si, 0
-            mov cx, 5
-            loop_coinassign:
-                mov ax, obs_ypos[si]
-                cmp ax, 23                   ;compare if an obstacle(obs_ypos[si]) is at the top
-                jne check_nextcoinassign
-                mov ax, si
-                mov obsy_address, ax
+            mov ax, obs_ypos[si+0]
+            cmp ax, 23
+            jl check_nextcoinassign
+            ret
+
+            check_nextcoinassign:
                 mov ax, obs_ypos[si]        ;coiny = obs_ypos[si]
                 mov coiny, ax
                 mov ax, obs_xpos[si]        ;coinx = obs_xpos[si]
                 mov coinx, ax
-                check_nextcoinassign:
-                    add si, 2
-                    loop loop_coinassign
-                    mov si, 0
 
             assign_coinx:
                 call nurng                  ;generate randomNum
@@ -752,7 +753,6 @@ org 0100h
                 je coin_position4
                 jmp assign_coinx            ;if no conditions satisfied
 
-                mov si, obsy_address
                 coin_position1:
                     mov coinx, 135
                     mov ax, obs_xpos[si]
@@ -778,11 +778,11 @@ org 0100h
                     je coin_position1
                     jmp check_tempcoinx
 
-                check_tempcoinx:            ;go to assign_coinx if it overlaps with an obstacle
+                check_tempcoinx:                        ;if no obstacle overlaps, then set coin_state to active(descending)
                     mov coin_state, 2
 
         coin_descending:
-            mov si, obsy_address
+            mov si, 0
             mov ax, obs_ypos[si]
             mov coiny, ax
             mov ax, y_bottomlimit
@@ -2274,21 +2274,69 @@ org 0100h
         cmp enemy_state, 0
         jne exit_updatteenemy
         cmp icicle_state, 0
-        jne exit_updatteenemy
+        jne exit_updatteenemy  
+        
 
-        update_enemy:
-            call calculate_overallscore
-            mov enemy_interval, 10
-            mov ax, score_overallhex        ; Load score_tens into AX
-            mov bx, enemy_interval    ; Load enemy_interval into BL
+        cmp score_overallhex, 50
+        jl set_intervaleasy
 
-            xor dx, dx                ; Clear DX for division
-            div bx                    ; Divide AX by BL, quotient in AL, remainder in DX
-            cmp dx, 0
-            jne exit_updatteenemy
-            mov enemy_state, 1        ; Set enemy state to 1
-            ret
+        cmp score_overallhex, 100
+        jl set_intervalmedium
+
+        cmp score_overallhex, 150
+        jl set_intervalintermediate
+
+        cmp score_overallhex, 200
+        jl set_intervalhard
+
+        cmp score_overallhex, 250
+        jl set_intervalextreme
+
         exit_updatteenemy:  ret
+
+        set_intervaleasy:
+            mov icicle_velocity, 4
+            mov enemy_interval, 10
+            jmp check_interval
+
+        set_intervalmedium:
+            mov icicle_velocity, 8
+            mov enemy_interval, 8
+
+            jmp check_interval
+
+        set_intervalintermediate:
+            mov icicle_velocity, 12
+            mov enemy_interval, 7
+
+            jmp check_interval
+
+        set_intervalhard:
+            mov icicle_velocity, 14
+            mov enemy_interval, 4
+
+            jmp check_interval
+
+        set_intervalextreme:
+            mov icicle_velocity, 16
+            mov enemy_interval, 2
+            jmp check_interval
+
+        check_interval:
+            
+            mov ah, 2ch
+            int 21h
+            xor ax, ax
+            mov al, dh                  ;dh contains seconds
+            inc al
+            mov bl, enemy_interval      ;divisor, interval 
+            div bl                      ;divide current seconds to bl
+            cmp ah, 0                   ;compare remainder
+            jne exit_updatteenemy             
+
+        update_enemy:                   ;if(icicle_state==0 && enemy_state==0 && ah==0)
+            mov enemy_state, 1
+            ret
     update_enemydifficulty endp
 
     ; _update_obsXpos must be called after value in randomNum is called to change the obstacles x position
@@ -2358,6 +2406,8 @@ org 0100h
     generateseed endp
 
     default_gamevalue proc near
+        mov enemy_state, 1
+        mov coin_state, 1
         mov icicley, 8
         mov icicle_state, 0
         mov si, 0
@@ -2561,6 +2611,7 @@ org 0100h
         mov ah, 09h
         mov dx, offset line5_game       ;score
         int 21h
+
         call calculate_overallscore
         mov ah, 02h
         mov dh, 0eh
@@ -3021,15 +3072,11 @@ org 0100h
     	cmp score_hund, 10
     	jl exit_increment
     
-    	exit_increment:
-            
-            ret
+    	exit_increment: ret
     increment_score endp
 
 
     Highscore proc 
-        call calculate_overallscore
-
         xor ax, ax          ; reset ax register to 0
         mov .highscore, ax
         mov al, tempscore[si+0]
@@ -3050,20 +3097,17 @@ org 0100h
         jnl exit_high
         jmp set_high
 
-    set_high:
-        mov al, score_ones
-        mov tempscore[si], al   ; Set score_ones to the first word in tempscore
-        mov al, score_tens
-        mov tempscore[si+1], al ; Set score_tens to the second word in tempscore
-        mov al, score_hund
-        mov tempscore[si+2], al ; Set score_hund to the third word in tempscore
-        jmp exit_high
-        
+        set_high:
+            mov al, score_ones
+            mov tempscore[si], al   ; Set score_ones to the first word in tempscore
+            mov al, score_tens
+            mov tempscore[si+1], al ; Set score_tens to the second word in tempscore
+            mov al, score_hund
+            mov tempscore[si+2], al ; Set score_hund to the third word in tempscore
+            jmp exit_high
+            
 
-    exit_high:
-       
-       ret
-
+        exit_high:  ret
     Highscore endp
 
     printhigh proc
