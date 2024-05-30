@@ -15,10 +15,13 @@
     line1_over db "Game Over...", "$"
     line2_over db "Score: ", "$"
     line3_over db "Press 'R' to return to menu", "$"
+    line4_over db "High Score: ", "$"
+    .highscore  dw 0
     ;menu state
     line1_menu db "MAHARLIKA ASCENDANCE", "$"   ;20
     line3_menu db "[s] Start playing", "$"
     line4_menu db "[t] Tutorial", "$"
+    tempscore db 0, 0, 0
     ;tutorial state
     line1_pg1 db "Use 'wasd' to move", "$"      ;18
     line2_pg1 db "your character!", "$"         ;15
@@ -28,9 +31,9 @@
     line2_pg3 db "and falling icicles!", "$"    ;20
     line1_pg4 db "Obstacles increase", "$"      ;18
     line2_pg4 db "as you score!", "$"           ;13
-    line1_pg5 db "5 points", "$" ;8
-    line2_pg5 db "10 points", "$" ;9
-    line3_pg5 db "20 points", "$" ;9
+    line1_pg5 db "1 points", "$" ;8
+    line2_pg5 db "2 points", "$" ;9
+    line3_pg5 db "5 points", "$" ;9
     line4_pg5 db "Keep an eye for coins", "$" ;21
     line5_pg5 db "to gain more points!", "$" ;20
     line3_tutorial db "[e] menu", "$"           ;8
@@ -63,6 +66,7 @@
     tutorial_page db 1
     current_seconds db 0
     menu_page db 1 
+
 
     ;character variables
     char_size dw 0fh
@@ -475,8 +479,8 @@ org 0100h
         call default_gamevalue
         call clear_screen
 
-        mov ah, 2ch
-        int 21h
+        mov ah, 2ch                     ;READ TIME
+        int 21h                         ;USE DH = SECONDS, DL = 1/100 SECONDS
         mov prevtime, dh
 
         check_state:
@@ -488,7 +492,6 @@ org 0100h
             je game_over
             cmp game_state, 3
             je tutorial_screen
-            
 
         menu_screen:
             call clear_screen
@@ -529,6 +532,7 @@ org 0100h
             call clear_screen
             call gameover_rendersprite
             call render_sideboxover
+            call printhigh
             call gameover_printtext
             call generateseed
             call gameover_input         ;check for input
@@ -539,61 +543,7 @@ org 0100h
             call tutorial_printscreen         ; hanapin mo yung function nito tapos dun ka magdagdag ng code m mhiema, yung **** proc near
             call tutorial_input               ; same din dito
             call check_state
-        HighScore_Screen:
-            call clear_screen
-            call Highscore_printscreen
-            call Highscore_input
-            call check_state
     main endp
-
-        Highscore_printscreen proc near
-            mov bp, offset line2_over        ;score
-            mov _stringx, 15
-            mov _stringy, 16
-            mov _stringcolor, 0fh
-            mov _stringlength, 6
-            call _printtext
-
-            mov bp, offset line3_over       ;press r
-            mov _stringx, 7
-            mov _stringy, 18
-            mov _stringcolor, 0fh
-            mov _stringlength, 27
-            call _printtext
-
-            mov ah, 02h
-            mov dh, 10h
-            mov dl, 0Eh
-            call .printscore
-            ret
-
-            Highscore_printscreen endp
-            
-
-
-        Highscore_input proc near
-            mov ah, 04h      
-            int 16h  
-
-            jz Highscore_input ; If no key pressed, loop b
-
-            mov ah, 00h
-            int 16
-            cmp al, 'e'
-            je highscore_keypress
-            cmp al, 'E'
-            je highscore_keypress
-
-            jmp Highscore_input  
-
-        highscore_keypress:
-            mov game_state, 0         
-            call default_gamevalue    
-            call generateseed         
-            call _update_obsXpos      
-            ret         
-
-            Highscore_input endp
 
 
     coin_collission proc
@@ -945,8 +895,6 @@ org 0100h
 
         exit_renderdeath:   ret
     render_chardeathanimation endp
-
-
 
     tutorial_printscreen proc near              ; prints the text and sprites need at a given page
         cmp tutorial_page, 1
@@ -1549,21 +1497,21 @@ org 0100h
             mov _stringx, 17
             mov _stringy, 8
             mov _stringcolor, 0fh
-            mov _stringlength, 8
+            mov _stringlength, 7
             call _printtext
 
             mov bp, offset line2_pg5       ;10 points
             mov _stringx, 17
             mov _stringy, 10
             mov _stringcolor, 0fh
-            mov _stringlength, 9
+            mov _stringlength, 8
             call _printtext
 
             mov bp, offset line3_pg5       ;20 points
             mov _stringx, 17
             mov _stringy, 12
             mov _stringcolor, 0fh
-            mov _stringlength, 9
+            mov _stringlength, 8
             call _printtext
 
             mov bp, offset line4_pg5        ;Keep an eye for coins
@@ -1664,7 +1612,7 @@ org 0100h
     tutorial_input endp
 
     menu_input proc near
-        mov ah, 00h
+        mov ah, 00h             ; SET MODE TO READ KEY INPUT
         int 16h                 ; get the pressed key
         cmp al, 's'             ; compare with 's'
         je menu_skeyinput    ; if equal, jump to keypress_detected
@@ -1701,12 +1649,11 @@ org 0100h
 
 
     menu_printscreen endp
-
-    
+  
     menuscreen_printtext proc near
         ; Display the first line at row 4, column 5
 
-	; Display the first line at row 4, column 5
+	    ; Display the first line at row 4, column 5
         mov bp, offset line1_menu        ;[e] menu
         mov _stringx, 10
         mov _stringy, 04
@@ -2093,7 +2040,7 @@ org 0100h
 
     check_tick proc near
         mov ah, 2ch
-        int 21h
+        int 21h                 ; DH = seconds, dl = centiseconds
 
         cmp dl, current_tick
         jne changetick
@@ -2344,7 +2291,6 @@ org 0100h
         exit_updatteenemy:  ret
     update_enemydifficulty endp
 
-
     ; _update_obsXpos must be called after value in randomNum is called to change the obstacles x position
     _update_obsXpos proc near
         mov al, randomNum
@@ -2387,7 +2333,7 @@ org 0100h
             ret
     _update_obsXpos endp
 
-    nurng proc      ;to be optimized
+    nurng proc      ;to be optimized    linear congruential generator 
         ;IMPORTANT FOR RNG
         mov ax, rngseed
         mov bx, 0A9h
@@ -2474,7 +2420,6 @@ org 0100h
             ret
     gameover_input endp
 
-
     gameover_rendersprite proc near
             mov si, offset coin
             mov rendercoordX, 136
@@ -2522,7 +2467,6 @@ org 0100h
         
     render_sideboxover endp
 
-
     gameover_printtext proc near        
             ;box
             mov ah, 02h     
@@ -2565,15 +2509,28 @@ org 0100h
 
             mov bp, offset line3_over       ;press r
             mov _stringx, 7
-            mov _stringy, 18
+            mov _stringy, 21
             mov _stringcolor, 0fh
             mov _stringlength, 27
             call _printtext
 
-        mov ah, 02h
-        mov dh, 10h
-        mov dl, 0Eh
-        call .printscore
+            mov ah, 02h
+            mov dh, 10h
+            mov dl, 0Eh
+            call .printscore
+
+            call Highscore
+            mov bp, offset line4_over        ;High score
+            mov _stringx, 10
+            mov _stringy, 18
+            mov _stringcolor, 0fh
+            mov _stringlength, 11
+            call _printtext
+
+            call printhigh
+
+
+        
         ret
     gameover_printtext endp
     
@@ -2967,6 +2924,7 @@ org 0100h
         ;mov rendercoordY, 0             ;y coord
         ;mov _rendersizeX, 16            ;x size
         ;mov _rendersizeY, 16            ;y size
+        ;call _rendersprite
         ;this is declared before calling _rendersprite
 
     _rendersprite proc near         ;cx = x coord, dx = y coord, si = tileset(ie. tower, obstacle), _rendersizeX, _rendersizeY, renderX, renderY
@@ -3067,6 +3025,86 @@ org 0100h
             
             ret
     increment_score endp
+
+
+    Highscore proc 
+        call calculate_overallscore
+
+        xor ax, ax          ; reset ax register to 0
+        mov .highscore, ax
+        mov al, tempscore[si+0]
+        add .highscore, ax
+        xor ax, ax          ; reset ax register to 0
+        mov al, tempscore[si+1]
+        mov bl, 10
+        mul bl
+        add .highscore, ax
+        xor ax, ax          ; reset ax register to 0
+        mov al, tempscore[si+2]
+        mov bl, 100
+        mul bl
+        add .highscore, ax
+
+        mov ax, score_overallhex
+        cmp .highscore, ax
+        jnl exit_high
+        jmp set_high
+
+    set_high:
+        mov al, score_ones
+        mov tempscore[si], al   ; Set score_ones to the first word in tempscore
+        mov al, score_tens
+        mov tempscore[si+1], al ; Set score_tens to the second word in tempscore
+        mov al, score_hund
+        mov tempscore[si+2], al ; Set score_hund to the third word in tempscore
+        jmp exit_high
+        
+
+    exit_high:
+       
+       ret
+
+    Highscore endp
+
+    printhigh proc
+        mov si, 0
+        mov ah, 02h
+        mov dh, 18     ;y pos
+        mov dl, 21     ; x pos
+        int 10h
+
+        ; print hundreds digit
+    	push dx
+        mov dl, tempscore[si+2]
+    	add dl, '0'
+    	int 21h
+        pop dx
+
+    	inc dl              ; move to next square
+   	    int 10h
+        
+        ; print tens digit
+    	push dx
+        mov dl, tempscore[si+1]
+    	add dl, '0'
+    	int 21h
+        pop dx
+
+    	inc dl              ; move to next square
+    	int 10h
+
+        ; print ones digit
+
+    	push dx
+        mov dl, tempscore[si+0]
+    	add dl, '0'
+    	int 21h
+        pop dx
+
+        ret
+
+        printhigh endp
+
 
     .printscore proc near    ;dl - x position
         ; the string 'Score: ' occupies 7 squares incl. whitespace
