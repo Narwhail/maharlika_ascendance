@@ -481,16 +481,16 @@ org 0100h
 
         mov ah, 2ch                     ;READ TIME
         int 21h                         ;USE DH = SECONDS, DL = 1/100 SECONDS
-        mov prevtime, dh
+        mov prevtime, dh                ;initialize for check_tick
 
         check_state:
-            cmp game_state, 0
+            cmp game_state, 0           ;if(game_state == 0)
             je menu_screen
-            cmp game_state, 1
+            cmp game_state, 1           ;if(game_state == 1)
             je playing_game
-            cmp game_state, 2
+            cmp game_state, 2           ;if(game_state == 2)
             je game_over
-            cmp game_state, 3
+            cmp game_state, 3           ;if(game_state == 3)
             je tutorial_screen
 
         menu_screen:
@@ -542,7 +542,6 @@ org 0100h
             call tutorial_input               ; same din dito
             call check_state
     main endp
-
 
     coin_collission proc
         ;check if char is colliding with obstacle
@@ -1644,11 +1643,6 @@ org 0100h
             mov menu_page, 1
             ret
     menu_input endp
-
-    menu_printscreen proc near 
-
-
-    menu_printscreen endp
   
     menuscreen_printtext proc near
         ; Display the first line at row 4, column 5
@@ -1704,27 +1698,6 @@ org 0100h
             
         ret
     menuscreen_printtext endp
-
-    ; syntax
-    ; mov bp, offset daString
-    ; mov _stringx, 2               ; x position of string
-    ; mov _stringy, 2               ; y position of string
-    ; mov bl, _stringcolor
-    ; mov _stringlength, 5
-    ; call _printtext
-    _printtext proc
-        mov  ax, ds
-        mov  es, ax
-        mov dh, _stringy
-        mov dl, _stringx
-        mov bl, _stringcolor
-        mov cx, _stringlength
-        mov ax, 1301h   
-        mov bh, 00h   ;page
-        int 10h
-        mov bp, 0
-        ret 
-    _printtext endp
 
     render_menutower proc near
         mov si, offset menutower_topchest
@@ -1786,6 +1759,7 @@ org 0100h
         xor si, si
         ret
     render_menutower endp
+
     render_sideboxmenu proc near
             mov si, offset RightsideBox       
             mov rendercoordX, 64
@@ -1802,7 +1776,6 @@ org 0100h
             call _rendersprite
 
      render_sideboxmenu endp
-
 
     render_icicle proc near
         ; icicle has 3 states. 0 for inactive, 1 for tracking, 2 for active
@@ -3018,6 +2991,28 @@ org 0100h
             ret
     _rendersprite endp
 
+        ; syntax
+        ; mov bp, offset daString
+        ; mov _stringx, 2               ; x position of string
+        ; mov _stringy, 2               ; y position of string
+        ; mov bl, _stringcolor
+        ; mov _stringlength, 5
+        ; call _printtext
+
+    _printtext proc
+        mov  ax, ds
+        mov  es, ax
+        mov dh, _stringy
+        mov dl, _stringx
+        mov bl, _stringcolor
+        mov cx, _stringlength
+        mov ax, 1301h   
+        mov bh, 00h   ;page
+        int 10h
+        mov bp, 0
+        ret 
+    _printtext endp
+
     render_char proc near
         cmp char_xfixedpos, 1
         je render_leftchar
@@ -3074,7 +3069,6 @@ org 0100h
     
     	exit_increment: ret
     increment_score endp
-
 
     Highscore proc 
         xor ax, ax          ; reset ax register to 0
@@ -3148,7 +3142,6 @@ org 0100h
         ret
 
         printhigh endp
-
 
     .printscore proc near    ;dl - x position
         ; the string 'Score: ' occupies 7 squares incl. whitespace
