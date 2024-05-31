@@ -1,49 +1,49 @@
-;occasionaly freezes when playing, can be resolved by pressing keyboard
-;sprites must be incremented by 1 to properly print
-;menu input requires 2 keypresses
+ 
+ 
+ 
 
 .model small
 .stack
 .data
-    ;strings
-    ;playing state
+     
+     
     line1_game db "MAHARLIKA", "$"
     line2_game db "ASCENDANCE", "$"
     line5_game db "Score:" ,"$"
     blank_game db "   " ,"$"
-    ;gameover state
+     
     line1_over db "Game Over...", "$"
     line2_over db "Score: ", "$"
     line3_over db "Press 'R' to return to menu", "$"
     line4_over db "High Score: ", "$"
     .highscore  dw 0
-    ;menu state
-    line1_menu db "MAHARLIKA ASCENDANCE", "$"   ;20
+     
+    line1_menu db "MAHARLIKA ASCENDANCE", "$"    
     line3_menu db "[s] Start playing", "$"
     line4_menu db "[t] Tutorial", "$"
     tempscore db 0, 0, 0
-    ;tutorial state
-    line1_pg1 db "Use 'wasd' to move", "$"      ;18
-    line2_pg1 db "your character!", "$"         ;15
-    line1_pg2 db "Gain score", "$"              ;10
-    line2_pg2 db "by staying alive!", "$"       ;17
-    line1_pg3 db "Watch out for obstacles", "$" ;23
-    line2_pg3 db "and falling icicles!", "$"    ;20
-    line1_pg4 db "Obstacles increase", "$"      ;18
-    line2_pg4 db "as you score!", "$"           ;13
-    line1_pg5 db "1 points", "$" ;8
-    line2_pg5 db "2 points", "$" ;9
-    line3_pg5 db "5 points", "$" ;9
-    line4_pg5 db "Keep an eye for coins", "$" ;21
-    line5_pg5 db "to gain more points!", "$" ;20
-    line3_tutorial db "[e] menu", "$"           ;8
+     
+    line1_pg1 db "Use 'wasd' to move", "$"       
+    line2_pg1 db "your character!", "$"          
+    line1_pg2 db "Gain score", "$"               
+    line2_pg2 db "by staying alive!", "$"        
+    line1_pg3 db "Watch out for obstacles", "$"  
+    line2_pg3 db "and falling icicles!", "$"     
+    line1_pg4 db "Obstacles increase", "$"       
+    line2_pg4 db "as you score!", "$"            
+    line1_pg5 db "1 points", "$"  
+    line2_pg5 db "2 points", "$"  
+    line3_pg5 db "5 points", "$"  
+    line4_pg5 db "Keep an eye for coins", "$"  
+    line5_pg5 db "to gain more points!", "$"  
+    line3_tutorial db "[e] menu", "$"            
 
-    ;game variables
+     
     current_tick db 00h
     y_toplimit dw 18h
     y_bottomlimit dw 0098h
-    y_velocity dw 8             ;this is used for obstacles, and tower y movement
-    game_state dw 0         ;0 = menu screen, 1 = playing, 2 = game over, 3 = tutorial
+    y_velocity dw 8              
+    game_state dw 0          
     randomNum db 01h
     rngseed dw 00h
     score_ones db 0
@@ -56,7 +56,7 @@
     _rendersizeX dw 0
     _rendersizeY dw 0
     prevtime db 0
-    allowscore db 0             ;0 = inactive, 1 = active
+    allowscore db 0              
     delaytime db 0
     tempmsecond db 0
     _stringx db 0
@@ -68,33 +68,33 @@
     menu_page db 1 
 
 
-    ;character variables
+     
     char_size dw 0fh
     char_x dw 0087h
     char_y dw 0098h
     char_velocity dw 0008h
-    char_xfixedpos dw 1       ;0087h, 00b7h, 00dfh, 010fh
+    char_xfixedpos dw 1        
 
-    ;enemy variables
+     
     enemy_x dw 202
     enemy_y dw 9
-    enemy_state db 0           ;0 = inactive, 1 = descending, 2 = activating, 3 = ascending
+    enemy_state db 0            
     enemy_interval db 10
-    icicle_state db 0          ;0 = inactive, 1 = tracking, 2 = active  (will automatically turn inactive once it reaches the bottom limit)
+    icicle_state db 0           
     iciclex dw ?
     icicley dw 8
     icicle_velocity dw 4
 
-    ;coin variables
+     
     coinx dw 0
     coiny dw 0
     coinsize dw 8
     tempcoinx dw 0
-    coin_state dw 0                 ; 0 inactive, 1 activating, 2 active, 3 cooldown
+    coin_state dw 0                  
     coin_value dw 1
     coin_interval db 0
 
-    ;tower
+     
     menutowerx dw 215
     menutowery_seg1 dw 103, 135, 167
     menutowery_seg2 dw 119, 151, 183
@@ -102,16 +102,16 @@
     towery dw 17, 33, 49, 65, 81, 97, 113, 129, 145, 162, 178
     towerx dw 151
 
-    ;obstacle
-    obs_xpos dw 183, 183, 183, 183, 183                 ;address is by 2 ie. 0,2,4,6,8
-    obs_ypos dw 23, 55, 87, 119, 151                    ;address is by 2 ie. 0,2,4,6,8
-    obsfixedxpos_state dw 0                             ;0 = 0087h, 1 = 00b7h, 2 = 00dfh, 3 = 010fh 
-    obs_isactive dw 1, 0, 0, 0, 0                       ;0 = inactive, 1 = active
+     
+    obs_xpos dw 183, 183, 183, 183, 183                  
+    obs_ypos dw 23, 55, 87, 119, 151                     
+    obsfixedxpos_state dw 0                              
+    obs_isactive dw 1, 0, 0, 0, 0                        
     .obs_activetemp dw 0, 0, 0, 0, 0
 
-    ;sprites
+     
 
-    coin db 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h     ;9x9 
+    coin db 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h      
          db 00h, 0Eh, 0Eh, 2Ah, 2Ah, 0Eh, 0Eh, 00h, 00h
          db 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 2Ah, 0Eh, 0Eh, 00h
          db 0Eh, 2Ah, 0Eh, 0Eh, 0Eh, 0Eh, 2Ah, 0Eh, 00h
@@ -121,7 +121,7 @@
          db 00h, 00h, 0Eh, 0Eh, 0Eh, 0Eh, 00h, 00h, 00h
          db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    coinsilver  db 00h, 00h, 1Ah, 1Ah, 1Ah, 1Ah, 00h, 00h, 00h  ;9x9
+    coinsilver  db 00h, 00h, 1Ah, 1Ah, 1Ah, 1Ah, 00h, 00h, 00h   
                 db 00h, 1Ah, 1Ah, 17h, 17h, 1Ah, 1Ah, 00h, 00h
                 db 1Ah, 1Ah, 17h, 1Ah, 1Ah, 17h, 1Ah, 1Ah, 00h
                 db 1Ah, 17h, 1Ah, 1Ah, 1Ah, 1Ah, 17h, 1Ah, 00h
@@ -131,7 +131,7 @@
                 db 00h, 00h, 1Ah, 1Ah, 1Ah, 1Ah, 00h, 00h, 00h
                 db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    coinruby db 00h, 00h, 28h, 28h, 28h, 28h, 00h, 00h, 00h ;9x9
+    coinruby db 00h, 00h, 28h, 28h, 28h, 28h, 00h, 00h, 00h  
              db 00h, 28h, 28h, 04h, 04h, 28h, 28h, 00h, 00h
              db 28h, 28h, 04h, 28h, 28h, 04h, 28h, 28h, 00h
              db 28h, 04h, 28h, 28h, 28h, 28h, 04h, 28h, 00h
@@ -141,7 +141,7 @@
              db 00h, 00h, 28h, 28h, 28h, 28h, 00h, 00h, 00h
              db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    icicle  db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h    ;10x15
+    icicle  db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h     
             db 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h
             db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
             db 00h, 36h, 36h, 36h, 36h, 36h, 36h, 36h, 00h, 00h
@@ -157,7 +157,7 @@
             db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
             db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
     
-    Player_up  db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h    ;17x17
+    Player_up  db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     
                db 00h, 00h, 00h, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 00h
                db 00h, 00h, 2Fh, 2Fh, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 2Fh, 00h
                db 00h, 00h, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 2Fh, 00h, 00h
@@ -174,7 +174,7 @@
                db 00h, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 00h, 00h
                db 00h, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 00h
     
-    Player_left     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
+    Player_left     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h    
                     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h
                     db 00h, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 00h, 00h, 00h
                     db 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 2Fh, 00h, 2Fh, 00h, 00h, 00h
@@ -193,7 +193,7 @@
                     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
 
-    Player_right    db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
+    Player_right    db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h    
                     db 00h, 00h, 00h, 00h, 00h, 2Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                     db 00h, 00h, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h, 00h
                     db 00h, 00h, 2Fh, 00h, 2Fh, 00h, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 2Fh, 00h, 00h
@@ -211,8 +211,8 @@
                     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-                        ;                       5                       10                       15                       20                       25                       30                       35                       40                       45                       50                      55
-    menutower_topchest  db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h      ;57x24
+                         
+    menutower_topchest  db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h       
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 2ah, 2ah, 06h, 06h, 06h, 06h, 06h, 06h, 06h, 06h, 2ah, 2ah, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
@@ -238,8 +238,8 @@
                         db 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh , 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-                        ;                       5                       10                       15                       20                       25                       30                       35                       40                       45                       50                      55
-    menutower_seg1      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     ;57x17
+                         
+    menutower_seg1      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h      
                         db 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h
                         db 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h      
                         db 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h      
@@ -257,8 +257,8 @@
                         db 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-                        ;                       5                       10                       15                       20                       25                       30                       35                       40                       45                       50                      55
-    menutower_seg2      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     ;57x17
+                         
+    menutower_seg2      db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h      
                         db 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h
                         db 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h
                         db 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h
@@ -276,7 +276,7 @@
                         db 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h, 00h, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 0fh, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    enemy   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 20h, 20h, 20h, 20h, 20h, 00h, 00h, 00h, 00h  ;17x17
+    enemy   db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 20h, 20h, 20h, 20h, 20h, 20h, 00h, 00h, 00h, 00h   
             db 00h, 20h, 00h, 00h, 00h, 20h, 20h, 20h, 20h, 20h, 20h, 20h, 20h, 20h, 20h, 00h, 00h 
             db 20h, 20h, 20h, 00h, 20h, 20h, 20h, 20h, 20h, 20h, 20h, 00h, 00h, 00h, 00h, 00h, 00h 
             db 00h, 00h, 20h, 00h, 20h, 00h, 00h, 00h, 20h, 20h, 20h, 20h, 00h, 00h, 00h, 00h, 00h 
@@ -294,7 +294,7 @@
             db 00h, 00h, 20h, 00h, 20h, 20h, 00h, 20h, 20h, 20h, 20h, 20h, 20h, 00h, 20h, 20h, 00h
             db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
             
-    ingame_towerseg1    dB 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h  ;33x17
+    ingame_towerseg1    dB 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h   
                         DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
                         DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
                         DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
@@ -348,7 +348,7 @@
                         DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
     
-    obstacle_left   DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     ;18x17
+    obstacle_left   DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h      
                     DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
                     DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
                     DB 00h, 00h, 00h, 00h, 00h, 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
@@ -366,7 +366,7 @@
                     DB 00h, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h
                     DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    obstacle_right  DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h     ;18x17
+    obstacle_right  DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h      
                     DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                     DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                     DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h, 00h, 00h, 00h, 00h, 00h
@@ -384,7 +384,7 @@
                     DB 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 0Fh, 00h, 00h
                     DB 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    Player_leftdark     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
+    Player_leftdark     db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h    
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 00h, 00h, 00h
                         db 00h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 14h, 00h, 00h, 00h
                         db 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 14h, 00h, 14h, 00h, 00h, 00h
@@ -402,7 +402,7 @@
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
 
-    Player_rightdark    db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h   ;17x17
+    Player_rightdark    db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h    
                         db 00h, 00h, 00h, 00h, 00h, 14h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
                         db 00h, 00h, 14h, 00h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h, 00h
                         db 00h, 00h, 14h, 00h, 14h, 00h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 14h, 00h, 00h
@@ -475,23 +475,23 @@ org 0100h
         mov ax, @data
         mov ds, ax
 
-        call generateseed           ; used mostly for rng
+        call generateseed            
         call default_gamevalue
         call clear_screen
 
-        mov ah, 2ch                     ; Mode to read time
-        int 21h     ;Returns DH = SECONDS, DL = 1/100 SECONDS
-        mov prevtime, dh                ;initialize for check_tick
+        mov ah, 2ch                      
+        int 21h      
+        mov prevtime, dh                 
 
         check_state:
-            cmp game_state, 0           ;if(game_state == 0)
-            je menu_screen              ;if true
-            cmp game_state, 1           ;if(game_state == 1)
-            je playing_game             ;if true            
-            cmp game_state, 2           ;if(game_state == 2)
-            je game_over                ;if true
-            cmp game_state, 3           ;if(game_state == 3)
-            je tutorial_screen          ;if true
+            cmp game_state, 0            
+            je menu_screen               
+            cmp game_state, 1            
+            je playing_game              
+            cmp game_state, 2            
+            je game_over                 
+            cmp game_state, 3            
+            je tutorial_screen           
 
         menu_screen:
             call clear_screen
@@ -533,21 +533,21 @@ org 0100h
             call printhigh
             call gameover_printtext
             call generateseed
-            call gameover_input         ;check for input
+            call gameover_input          
 
             call check_state
         tutorial_screen:
             call clear_screen
-            call tutorial_printscreen         ; hanapin mo yung function nito tapos dun ka magdagdag ng code m mhiema, yung **** proc near
-            call tutorial_input               ; same din dito
+            call tutorial_printscreen          
+            call tutorial_input                
             call check_state
     main endp
 
     coin_collission proc
-        ;check if char is colliding with obstacle
-        ;char_x+char_size > obstacle_xpos && char_x < obstacle_xpos+char_size 
-        ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
-        cmp coin_state, 0                       ;ignore coin if inactive(0)
+         
+         
+         
+        cmp coin_state, 0                        
         je exit_coincollission2
         jmp check_coincollission
 
@@ -575,7 +575,7 @@ org 0100h
         cmp char_y, ax
         jnl exit_coin_collission
 
-        ;if collission is true, set state to cooldown
+         
         cmp coin_state, 2
         jne exit_coin_collission
 
@@ -641,13 +641,13 @@ org 0100h
         cmp coin_state, 0
         jne exit_update_coinactive
         
-        mov ah, 2ch                 ; mode to read time
+        mov ah, 2ch                  
         int 21h
         xor ax, ax
-        mov al, dh                  ;dh contains seconds
-        mov bl, coin_interval       ;divisor, interval
-        div bl                      ;divide current seconds to bl then save it to ax, ah contains remainer, al contains quotient
-        cmp ah, 0                   ;compare remainder
+        mov al, dh                   
+        mov bl, coin_interval        
+        div bl                       
+        cmp ah, 0                    
         jne exit_update_coinactive
         mov coin_state, 1
 
@@ -671,58 +671,58 @@ org 0100h
 
         exit_rendercoin:    ret
         render_silvercoin:
-            mov si, offset coinsilver           ;tileset array, will refer for color to print
+            mov si, offset coinsilver            
             mov ax, coinx
             add ax, 4
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov ax, coiny
             add ax, 4
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 9            ;x size
-            mov _rendersizeY, 9            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 9             
+            mov _rendersizeY, 9             
             call _rendersprite
             ret
             
         render_goldcoin:
-            mov si, offset coin           ;tileset array, will refer for color to print
+            mov si, offset coin            
             mov ax, coinx
             add ax, 4
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov ax, coiny
             add ax, 4
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 9            ;x size
-            mov _rendersizeY, 9            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 9             
+            mov _rendersizeY, 9             
             call _rendersprite
             ret
 
         render_rubycoin:
-            mov si, offset coinruby           ;tileset array, will refer for color to print
+            mov si, offset coinruby            
             mov ax, coinx
             add ax, 4
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov ax, coiny
             add ax, 4
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 9            ;x size
-            mov _rendersizeY, 9            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 9             
+            mov _rendersizeY, 9             
             call _rendersprite
             ret
     render_coin endp
 
     move_coin proc near
-        cmp coin_state, 1                   ;activating, determining where to position coin
+        cmp coin_state, 1                    
         jne move_coincondition2
         jmp coin_activating
 
         move_coincondition2:
-        cmp coin_state, 2                   ;active, is now moving downwards
+        cmp coin_state, 2                    
         jne move_coincondition3
         jmp coin_descending
 
         move_coincondition3:
-        cmp coin_state, 3                   ;cooldown, moving down still
-        jne exit_movecoin                   ;inactive, exit move_coin func
+        cmp coin_state, 3                    
+        jne exit_movecoin                    
         jmp coin_descending
 
         exit_movecoin:  ret
@@ -735,13 +735,13 @@ org 0100h
             ret
 
             check_nextcoinassign:
-                mov ax, obs_ypos[si]        ;coiny = obs_ypos[si]
+                mov ax, obs_ypos[si]         
                 mov coiny, ax
-                mov ax, obs_xpos[si]        ;coinx = obs_xpos[si]
+                mov ax, obs_xpos[si]         
                 mov coinx, ax
 
             assign_coinx:
-                call nurng                  ;generate randomNum
+                call nurng                   
                 cmp randomNum, 1
                 je coin_position1
                 cmp randomNum, 2
@@ -750,7 +750,7 @@ org 0100h
                 je coin_position3
                 cmp randomNum, 4
                 je coin_position4
-                jmp assign_coinx            ;if no conditions satisfied
+                jmp assign_coinx             
 
                 coin_position1:
                     mov coinx, 135
@@ -777,7 +777,7 @@ org 0100h
                     je coin_position1
                     jmp check_tempcoinx
 
-                check_tempcoinx:                        ;if no obstacle overlaps, then set coin_state to active(descending)
+                check_tempcoinx:                         
                     mov coin_state, 2
 
         coin_descending:
@@ -797,11 +797,11 @@ org 0100h
     move_coin endp
 
     render_chardeathanimation proc near
-        mov ah, 2ch             ; mode to read time
+        mov ah, 2ch              
         int 21h
 
         mov tempmsecond, dh
-        add tempmsecond, 4      ;add 2 seconds to temporary time
+        add tempmsecond, 4       
         cmp tempmsecond, 59
         jng loop_renderdeath
         sub tempmsecond, 60
@@ -820,73 +820,73 @@ org 0100h
             je render_rightchardeath
 
         render_leftchardeath:
-            mov ah, 2ch             ; mode to read time
+            mov ah, 2ch              
             int 21h
             xor ax, ax
-            mov al, dh      ;dh contains seconds
-            mov bl, 2       ;divisor, interval = 2 seconds
-            div bl          ;divide current seconds to bl
-            cmp ah, 0       ;compare remainder
+            mov al, dh       
+            mov bl, 2        
+            div bl           
+            cmp ah, 0        
             je _renderleftdark
             jmp _renderleft
 
             _renderleft:
-                mov si, offset Player_left      ;pangalan nung sprite
+                mov si, offset Player_left       
                 mov ax, char_x
-                mov rendercoordX, ax                ;x coord
+                mov rendercoordX, ax                 
                 mov ax, char_y
-                mov rendercoordY, ax                ;y coord
-                mov _rendersizeX, 17                ;x size
-                mov _rendersizeY, 17                ;y size
+                mov rendercoordY, ax                 
+                mov _rendersizeX, 17                 
+                mov _rendersizeY, 17                 
                 call _rendersprite     
                 jmp check_renderdeathtime
 
             _renderleftdark:
-                mov si, offset Player_leftdark      ;pangalan nung sprite
+                mov si, offset Player_leftdark       
                 mov ax, char_x
-                mov rendercoordX, ax                ;x coord
+                mov rendercoordX, ax                 
                 mov ax, char_y
-                mov rendercoordY, ax                ;y coord
-                mov _rendersizeX, 17                ;x size
-                mov _rendersizeY, 17                ;y size
+                mov rendercoordY, ax                 
+                mov _rendersizeX, 17                 
+                mov _rendersizeY, 17                 
                 call _rendersprite
                 jmp check_renderdeathtime
 
         render_rightchardeath:
-            mov ah, 2ch             ; mode to read time
+            mov ah, 2ch              
             int 21h
             xor ax, ax
-            mov al, dh      ;dh contains seconds
-            mov bl, 2       ;divisor, interval = 2 seconds
-            div bl          ;divide current seconds to bl
-            cmp ah, 0       ;compare remainder
+            mov al, dh       
+            mov bl, 2        
+            div bl           
+            cmp ah, 0        
             je _renderrightdark
             jmp _renderright
 
             _renderright:
-                mov si, offset Player_right      ;pangalan nung sprite
+                mov si, offset Player_right       
                 mov ax, char_x
-                mov rendercoordX, ax                ;x coord
+                mov rendercoordX, ax                 
                 mov ax, char_y
-                mov rendercoordY, ax                ;y coord
-                mov _rendersizeX, 17                ;x size
-                mov _rendersizeY, 17                ;y size
+                mov rendercoordY, ax                 
+                mov _rendersizeX, 17                 
+                mov _rendersizeY, 17                 
                 call _rendersprite     
                 jmp check_renderdeathtime
 
             _renderrightdark:
-                mov si, offset Player_rightdark      ;pangalan nung sprite
+                mov si, offset Player_rightdark       
                 mov ax, char_x
-                mov rendercoordX, ax                ;x coord
+                mov rendercoordX, ax                 
                 mov ax, char_y
-                mov rendercoordY, ax                ;y coord
-                mov _rendersizeX, 17                ;x size
-                mov _rendersizeY, 17                ;y size
+                mov rendercoordY, ax                 
+                mov _rendersizeX, 17                 
+                mov _rendersizeY, 17                 
                 call _rendersprite
                 jmp check_renderdeathtime
 
         check_renderdeathtime:
-            mov ah, 2ch             ; mode to read time
+            mov ah, 2ch              
             int 21h
             cmp tempmsecond, dh              
             je exit_renderdeath
@@ -895,7 +895,7 @@ org 0100h
         exit_renderdeath:   ret
     render_chardeathanimation endp
 
-    tutorial_printscreen proc near              ; prints the text and sprites need at a given page
+    tutorial_printscreen proc near               
         cmp tutorial_page, 1
         jne checkpage2
         jmp page1
@@ -964,44 +964,44 @@ org 0100h
             mov _rendersizeY, 17
             call _rendersprite
 
-            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov bp, offset line1_menu        
             mov _stringx, 10
             mov _stringy, 2
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line1_pg1       ;Use 'wasd' to move
+            mov bp, offset line1_pg1        
             mov _stringx, 11
             mov _stringy, 18
             mov _stringcolor, 0fh
             mov _stringlength, 18
             call _printtext
 
-            mov bp, offset line2_pg1        ;your character!
+            mov bp, offset line2_pg1         
             mov _stringx, 13
             mov _stringy, 19
             mov _stringcolor, 0fh
             mov _stringlength, 15
             call _printtext
 
-            mov bp, offset line3_tutorial        ;[e] menu
+            mov bp, offset line3_tutorial         
             mov _stringx, 16
             mov _stringy, 23
             mov _stringcolor, 0eh
             mov _stringlength, 8
             call _printtext
 
-            ; navigation bar
+             
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21   
             mov dl, 17     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 07h              ;character to print - solid circle
+            mov ah, 09h              
+            mov al, 07h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 5
             int 10h
 
@@ -1010,10 +1010,10 @@ org 0100h
             mov dh, 21    
             mov dl, 17     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 09h              ;character to print - blank circle
+            mov ah, 09h              
+            mov al, 09h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1022,10 +1022,10 @@ org 0100h
             mov dh, 21    
             mov dl, 23     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1ah              ;character to print - right arrow
+            mov ah, 09h              
+            mov al, 1ah               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
             ret
@@ -1080,14 +1080,14 @@ org 0100h
             mov _rendersizeY, 17
             call _rendersprite
 
-            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov bp, offset line1_menu        
             mov _stringx, 10
             mov _stringy, 2
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line1_pg2       ;Gain score
+            mov bp, offset line1_pg2        
             mov _stringx, 15
             mov _stringy, 18
             mov _stringcolor, 0fh
@@ -1095,30 +1095,30 @@ org 0100h
             call _printtext
 
 
-            mov bp, offset line2_pg2       ;by staying alive!
+            mov bp, offset line2_pg2        
             mov _stringx, 12
             mov _stringy, 19
             mov _stringcolor, 0fh
             mov _stringlength, 17
             call _printtext
 
-            mov bp, offset line3_tutorial        ;[e] menu
+            mov bp, offset line3_tutorial         
             mov _stringx, 16
             mov _stringy, 23
             mov _stringcolor, 0eh
             mov _stringlength, 8
             call _printtext
 
-            ; navigation bar
+             
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
             mov dl, 15     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1bh              ;character to print - left arrow
+            mov ah, 09h              
+            mov al, 1bh               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1127,10 +1127,10 @@ org 0100h
             mov dh, 21   
             mov dl, 17     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 07h              ;character to print - solid circle
+            mov ah, 09h              
+            mov al, 07h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 5
             int 10h
 
@@ -1139,10 +1139,10 @@ org 0100h
             mov dh, 21    
             mov dl, 18     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 09h              ;character to print - blank circle
+            mov ah, 09h              
+            mov al, 09h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1151,10 +1151,10 @@ org 0100h
             mov dh, 21    
             mov dl, 23     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1ah              ;character to print - right arrow
+            mov ah, 09h              
+            mov al, 1ah               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
             ret
@@ -1223,14 +1223,14 @@ org 0100h
             mov _rendersizeY, 15
             call _rendersprite
 
-            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov bp, offset line1_menu        
             mov _stringx, 10
             mov _stringy, 2
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            ; enemy exclamation
+             
             mov ah, 02h     
             mov bh, 0     
             mov dh, 5              
@@ -1243,44 +1243,44 @@ org 0100h
             mov bl, 20h            
             int 10h
 
-            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov bp, offset line1_menu        
             mov _stringx, 10
             mov _stringy, 2
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line1_pg3        ;Watch out for obstacles
+            mov bp, offset line1_pg3         
             mov _stringx, 9
             mov _stringy, 18
             mov _stringcolor, 0fh
             mov _stringlength, 23
             call _printtext
 
-            mov bp, offset line2_pg3        ;and falling icicles!
+            mov bp, offset line2_pg3         
             mov _stringx, 11
             mov _stringy, 19
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line3_tutorial        ;[e] menu
+            mov bp, offset line3_tutorial         
             mov _stringx, 16
             mov _stringy, 23
             mov _stringcolor, 0eh
             mov _stringlength, 8
             call _printtext
 
-            ; navigation bar
+             
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
             mov dl, 15     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1bh              ;character to print - left arrow
+            mov ah, 09h              
+            mov al, 1bh               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1289,10 +1289,10 @@ org 0100h
             mov dh, 21    
             mov dl, 17     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 07h              ;character to print - solid circle
+            mov ah, 09h              
+            mov al, 07h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 5
             int 10h
 
@@ -1301,10 +1301,10 @@ org 0100h
             mov dh, 21    
             mov dl, 19     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 09h              ;character to print - blank circle
+            mov ah, 09h              
+            mov al, 09h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1313,10 +1313,10 @@ org 0100h
             mov dh, 21    
             mov dl, 23     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1ah              ;character to print - right arrow
+            mov ah, 09h              
+            mov al, 1ah               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
             ret
@@ -1385,44 +1385,44 @@ org 0100h
             mov _rendersizeY, 17
             call _rendersprite
 
-            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov bp, offset line1_menu        
             mov _stringx, 10
             mov _stringy, 2
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line1_pg4        ;Obstacles increase
+            mov bp, offset line1_pg4         
             mov _stringx, 11
             mov _stringy, 18
             mov _stringcolor, 0fh
             mov _stringlength, 18
             call _printtext
 
-            mov bp, offset line2_pg4        ;as you score!
+            mov bp, offset line2_pg4         
             mov _stringx, 14
             mov _stringy, 19
             mov _stringcolor, 0fh
             mov _stringlength, 13
             call _printtext
 
-            mov bp, offset line3_tutorial        ;[e] menu
+            mov bp, offset line3_tutorial         
             mov _stringx, 16
             mov _stringy, 23
             mov _stringcolor, 0eh
             mov _stringlength, 8
             call _printtext
 
-            ; navigation bar
+             
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
             mov dl, 15     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1bh              ;character to print - left arrow
+            mov ah, 09h              
+            mov al, 1bh               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1431,10 +1431,10 @@ org 0100h
             mov dh, 21    
             mov dl, 17     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 07h              ;character to print - solid circle
+            mov ah, 09h              
+            mov al, 07h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 5
             int 10h
 
@@ -1443,10 +1443,10 @@ org 0100h
             mov dh, 21    
             mov dl, 20     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 09h              ;character to print - blank circle
+            mov ah, 09h              
+            mov al, 09h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1455,95 +1455,95 @@ org 0100h
             mov dh, 21    
             mov dl, 23     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1ah              ;character to print - right arrow
+            mov ah, 09h              
+            mov al, 1ah               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
             ret
 
         page5:
-            mov si, offset coinsilver       ;silver coin
+            mov si, offset coinsilver        
             mov rendercoordX, 119
             mov rendercoordY, 63
             mov _rendersizeX, 9
             mov _rendersizeY, 9
             call _rendersprite
 
-            mov si, offset coin       ;gold coin
+            mov si, offset coin        
             mov rendercoordX, 119
             mov rendercoordY, 79
             mov _rendersizeX, 9
             mov _rendersizeY, 9
             call _rendersprite
 
-            mov si, offset coinruby       ;ruby coin
+            mov si, offset coinruby        
             mov rendercoordX, 119
             mov rendercoordY, 95
             mov _rendersizeX, 9
             mov _rendersizeY, 9
             call _rendersprite
 
-            mov bp, offset line1_menu       ;MAHARLIKA ASCENDANCE
+            mov bp, offset line1_menu        
             mov _stringx, 10
             mov _stringy, 2
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line1_pg5       ;5 points
+            mov bp, offset line1_pg5        
             mov _stringx, 17
             mov _stringy, 8
             mov _stringcolor, 0fh
             mov _stringlength, 7
             call _printtext
 
-            mov bp, offset line2_pg5       ;10 points
+            mov bp, offset line2_pg5        
             mov _stringx, 17
             mov _stringy, 10
             mov _stringcolor, 0fh
             mov _stringlength, 8
             call _printtext
 
-            mov bp, offset line3_pg5       ;20 points
+            mov bp, offset line3_pg5        
             mov _stringx, 17
             mov _stringy, 12
             mov _stringcolor, 0fh
             mov _stringlength, 8
             call _printtext
 
-            mov bp, offset line4_pg5        ;Keep an eye for coins
+            mov bp, offset line4_pg5         
             mov _stringx, 10
             mov _stringy, 18
             mov _stringcolor, 0fh
             mov _stringlength, 21
             call _printtext
 
-            mov bp, offset line5_pg5        ;to gain more points!
+            mov bp, offset line5_pg5         
             mov _stringx, 10
             mov _stringy, 19
             mov _stringcolor, 0fh
             mov _stringlength, 20
             call _printtext
 
-            mov bp, offset line3_tutorial        ;[e] menu
+            mov bp, offset line3_tutorial         
             mov _stringx, 16
             mov _stringy, 23
             mov _stringcolor, 0eh
             mov _stringlength, 8
             call _printtext
 
-            ; navigation bar
+             
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 21    
             mov dl, 15     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 1bh              ;character to print - left arrow
+            mov ah, 09h              
+            mov al, 1bh               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
 
@@ -1552,10 +1552,10 @@ org 0100h
             mov dh, 21  
             mov dl, 17     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 07h              ;character to print - solid circle
+            mov ah, 09h              
+            mov al, 07h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 5
             int 10h
 
@@ -1564,23 +1564,23 @@ org 0100h
             mov dh, 21    
             mov dl, 21     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 09h              ;character to print - blank circle
+            mov ah, 09h              
+            mov al, 09h               
             mov bh, 0          
-            mov bl, 0ah             ;color
+            mov bl, 0ah              
             mov cx, 1
             int 10h
             ret
     tutorial_printscreen endp
 
-    tutorial_input proc near                    ; handles input for navigation
-        mov ah, 00h             ; set mode to read input
-        int 16h                 ; execute mode
+    tutorial_input proc near                     
+        mov ah, 00h              
+        int 16h                  
 
-        cmp al, 'a'             ; compare with 'a'
-        je a_keyinput           ; if equal, jump to a_keyinput
-        cmp al, 'A'             ; compare with 'A'
-        je a_keyinput           ; if equal, jump to a_keyinput
+        cmp al, 'a'              
+        je a_keyinput            
+        cmp al, 'A'              
+        je a_keyinput            
 
         cmp al, 'd'
         je d_keyinput
@@ -1592,7 +1592,7 @@ org 0100h
         cmp al, 'E'
         je e_keyinput
 
-        jmp tutorial_input          ; if no keys are pressed, jmp to tutorial_input again to check
+        jmp tutorial_input           
 
         a_keyinput:
             cmp tutorial_page, 1
@@ -1611,12 +1611,12 @@ org 0100h
     tutorial_input endp
 
     menu_input proc near
-        mov ah, 00h             ; SET MODE TO READ KEY INPUT
-        int 16h                 ; get the pressed key
-        cmp al, 's'             ; compare with 's'
-        je menu_skeyinput    ; if equal, jump to keypress_detected
-        cmp al, 'S'             ; compare with 'S'
-        je menu_skeyinput    ; if equal, jump to keypress_detected
+        mov ah, 00h              
+        int 16h                  
+        cmp al, 's'              
+        je menu_skeyinput     
+        cmp al, 'S'              
+        je menu_skeyinput     
 
         cmp al, 't'
         je menu_tkeyinput
@@ -1630,14 +1630,14 @@ org 0100h
         
 
 
-        jmp menu_input          ; if no keys pressed, keep jumping to menu_input
+        jmp menu_input           
 
         menu_skeyinput:
-            mov game_state, 1       ; set game_state to 01h
+            mov game_state, 1        
             ret
 
         menu_tkeyinput:
-            mov game_state, 3       ;set game_state to tutorial
+            mov game_state, 3        
         
         menu_hkeyinput:
             mov menu_page, 1
@@ -1645,25 +1645,25 @@ org 0100h
     menu_input endp
   
     menuscreen_printtext proc near
-        ; Display the first line at row 4, column 5
+         
 
-	    ; Display the first line at row 4, column 5
-        mov bp, offset line1_menu        ;[e] menu
+	     
+        mov bp, offset line1_menu         
         mov _stringx, 10
         mov _stringy, 04
         mov _stringcolor, 0fh
         mov _stringlength, 20
         call _printtext
 
-        mov bp, offset line3_menu        ;[e] menu
+        mov bp, offset line3_menu         
         mov _stringx, 04
         mov _stringy, 13
         mov _stringcolor, 0eh
         mov _stringlength, 17
         call _printtext         
 
-        ; Display the first line at row 4, column 5
-        mov bp, offset line4_menu        ;[e] menu
+         
+        mov bp, offset line4_menu         
         mov _stringx, 04
         mov _stringy, 15
         mov _stringcolor, 0eh
@@ -1671,16 +1671,16 @@ org 0100h
         call _printtext   
 
 
-        ;box
+         
             mov ah, 02h     
             mov bh, 00h     
             mov dh, 02    
             mov dl, 08     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 05fh          ;character to print - solid line
+            mov ah, 09h              
+            mov al, 05fh           
             mov bh, 0          
-            mov bl, 0fh             ;color
+            mov bl, 0fh              
             mov cx, 24
             int 10h
 
@@ -1689,10 +1689,10 @@ org 0100h
             mov dh, 05    
             mov dl, 08     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 05fh          ;character to print - solid line
+            mov ah, 09h              
+            mov al, 05fh           
             mov bh, 0          
-            mov bl, 0fh             ;color
+            mov bl, 0fh              
             mov cx, 24
             int 10h  
             
@@ -1778,226 +1778,226 @@ org 0100h
      render_sideboxmenu endp
 
     render_icicle proc near
-        ; icicle has 3 states. 0 for inactive, 1 for tracking, 2 for active
-        ; Inactive state basically ignores rendering the sprite and changing(moving) 
-        ;   the icicle position
-        ; Tracking state renders the sprite for every 2 centiseconds, clear_screen is 
-        ;   called every game tick mimicking a flickering effect. It also sets
-        ;   the icicleX position to be same as char_x + 4 position. Adding 4 pixels 
-        ;   will make the icicle render at the middle of the character since they
-        ;   differ in size. icicle = 10x15, player = 17x17
-        cmp icicle_state, 1         ; tracking state
+         
+         
+         
+         
+         
+         
+         
+         
+        cmp icicle_state, 1          
         je icicle_trackingrender
 
-        cmp icicle_state, 2         ; active
+        cmp icicle_state, 2          
         je icicle_activerender
 
         jmp exit_rendericicle
         icicle_trackingrender:
-            mov ah, 2ch                     ; set mode to read time. dh = seconds, dl = 1/00 seconds, centiseconds
-            int 21h                         ; execute mode
+            mov ah, 2ch                      
+            int 21h                          
 
-            xor ax, ax                      ; reset ax register to 0
-            mov al, dl                      ;dl contains centiseconds
-            mov bl, 2                       ;bl will be the divisor, interval = 2 centiseconds
-            div bl                          ;divide current centiseconds to bl
+            xor ax, ax                       
+            mov al, dl                       
+            mov bl, 2                        
+            div bl                           
 
-            cmp ah, 0                       ;compare modulo
-            jne icicle_activerender         ;if not 0, then render the sprite
-            ret                             ;else, dont render and exit function
+            cmp ah, 0                        
+            jne icicle_activerender          
+            ret                              
 
         icicle_activerender:
-            push si                         ; save si register value
-            mov si, offset icicle           ;tileset array, will refer for color to print
+            push si                          
+            mov si, offset icicle            
             mov ax, iciclex
-            mov rendercoordX, ax            ;x coord
+            mov rendercoordX, ax             
             mov ax, icicley
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 10            ;x size
-            mov _rendersizeY, 15            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 10             
+            mov _rendersizeY, 15             
             call _rendersprite
-            pop si                          ; return previously saved si register value
+            pop si                           
             jmp exit_rendericicle
 
         exit_rendericicle:  ret
     render_icicle endp
 
-    move_icicle proc near   ;0 inactive, 1 tracking, 2 active
-        cmp icicle_state, 1             ; if icicle_state = 1(activating), copy char_x+4 to iciclex.
+    move_icicle proc near    
+        cmp icicle_state, 1              
         je icicle_tracking
 
-        cmp icicle_state, 2             ; if icicle_state = 2(active), add icicley to icicle_velocity. Once icicley reaches
-        je icicle_active                ; y_bottomlimit+16, reset icicley position and change state to 0 (inactive)
+        cmp icicle_state, 2              
+        je icicle_active                 
 
-        jmp exit_moveicicle             ;else (no conditions are satisfied), exit function
+        jmp exit_moveicicle              
 
-        icicle_tracking:                ; will track the player's x position, if enemy_state is 2 (active), then icicle_state = 1(tracking)
+        icicle_tracking:                 
             mov ax, char_x
-            add ax, 4                   ;add 4 to charx
+            add ax, 4                    
             mov iciclex, ax         
 
             cmp enemy_state, 2
-            je exit_moveicicle          ;if enemy is in active state, continue to track playerx position for next run
+            je exit_moveicicle           
 
-            ;else
-            mov icicle_state, 2         ;else set icicle_state = 2(active), for next call
+             
+            mov icicle_state, 2          
             jmp exit_moveicicle
             
         icicle_active:
             mov ax, icicle_velocity
-            add icicley, ax             ;icicley += icicle_velocity
+            add icicley, ax              
 
-            mov ax, y_bottomlimit       ;y_bottomlimit+16
+            mov ax, y_bottomlimit        
             add ax, 16
             cmp icicley, ax
-            jle exit_moveicicle         ;if(icicley <= y_bottomlimit+16), exit
+            jle exit_moveicicle          
 
-            mov icicle_state, 0         ;else, reset icicle_state to inactive and icicley to 8
+            mov icicle_state, 0          
             mov icicley, 8
             jmp exit_moveicicle
         exit_moveicicle:    ret
     move_icicle endp
 
     move_tower proc 
-        push si                             ; save si register value
-        mov si, offset towery               ; set si the address of towery, since towery is a data word(dw) array
-                                            ; address is by 2s. si = 0, 2, 4, ...
-        mov cx, 11                          ;set loop to 11
+        push si                              
+        mov si, offset towery                
+                                             
+        mov cx, 11                           
 
         loop_movetower:
             mov ax, y_velocity
-            add [si], ax                    ;towery[si] += y_velocity
+            add [si], ax                     
 
             mov ax, y_bottomlimit
-            add ax, 32                      ; added 32 pixels since bottom limit is mainly used for restricting the player from going further
-            cmp [si], ax                    ; compare towery[si] to y_bottomlimit
-            jng loopcheck_movetower         ; if not obs_ypos[si] < y_bottomlimit                   
+            add ax, 32                       
+            cmp [si], ax                     
+            jng loopcheck_movetower          
 
-            ;returntop_tower
+             
             mov ax, 9
-            mov [si], ax                    ;mov obx_ypos[si] back to top
+            mov [si], ax                     
 
         loopcheck_movetower:
-            add si, 2                       ;add 2 to address, for next loop
-            loop loop_movetower             ;loop until cx is 0, decrements cx if cx has value
-            pop si                          ;return previously saved si register value
-            ret                             ;return function
+            add si, 2                        
+            loop loop_movetower              
+            pop si                           
+            ret                              
     move_tower endp
 
     render_gametower proc near
-        mov cx, 1                           ; loop 1 time
-        mov towerx, 151                     ; first towerx is 151, second towerx is 239
+        mov cx, 1                            
+        mov towerx, 151                      
 
         tower_segment1:
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax            ;x coord
+            mov rendercoordX, ax             
             mov ax, [si+0]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg1
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+6]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg1
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+12]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg1
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+18]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg1
             call _rendersprite
 
         tower_segment2:
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+2]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg2
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+8]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg2
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+14]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg2
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+20]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg2
             call _rendersprite
 
         tower_segment3:
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+4]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg3
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+10]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg3
             call _rendersprite
 
             mov si, offset towery
             mov ax, towerx
-            mov rendercoordX, ax           ;x coord
+            mov rendercoordX, ax            
             mov ax, [si+16]
-            mov rendercoordY, ax            ;y coord
-            mov _rendersizeX, 33            ;x size
-            mov _rendersizeY, 16            ;y size
+            mov rendercoordY, ax             
+            mov _rendersizeX, 33             
+            mov _rendersizeY, 16             
             mov si, offset ingame_towerseg3
             call _rendersprite
 
@@ -2013,14 +2013,14 @@ org 0100h
 
     check_tick proc near
         mov ah, 2ch
-        int 21h                 ; DH = seconds, dl = centiseconds
+        int 21h                  
 
-        cmp dl, current_tick        ; current == dl
+        cmp dl, current_tick         
         jne changetick
         jmp check_state
 
         changetick:
-            mov current_tick, dl        ;update game tick
+            mov current_tick, dl         
             cmp prevtime, dh
             je exit_checktick
 
@@ -2033,67 +2033,67 @@ org 0100h
     check_tick endp
 
     render_enemy proc near
-        cmp enemy_state, 0              ; if enemy_state is inactive, exit function (doesn't render the enemy)
+        cmp enemy_state, 0               
         je exit_drawenemy
 
-        mov si, offset enemy            ;tileset array, will refer for color to print
+        mov si, offset enemy             
         mov ax, enemy_x
-        mov rendercoordX, ax            ;x coord
+        mov rendercoordX, ax             
         mov ax, enemy_y
-        mov rendercoordY, ax            ;y coord
-        mov _rendersizeX, 17            ;x size
-        mov _rendersizeY, 17            ;y size
+        mov rendercoordY, ax             
+        mov _rendersizeX, 17             
+        mov _rendersizeY, 17             
         call _rendersprite
 
         cmp enemy_state, 2              
-        jne exit_drawenemy              ;if enemy is active continue to next line,
-                                        ;else jump to exit_drawenemy
+        jne exit_drawenemy               
+                                         
 
-        ; if(enemy_state == 2 && tempmsecond == dh)
-        mov ah, 2ch                     ; mode to read time
+         
+        mov ah, 2ch                      
         int 21h
         cmp tempmsecond, dh              
         jne exclamation                 
 
-        ; transition to enemy_state = 3
+         
         mov enemy_state, 3
 
         exclamation:
-            mov ah, 02h                 ; mode to position cursor
+            mov ah, 02h                  
             mov bh, 0     
-            mov dh, 2               ;y pos
-            mov dl, 26              ;x pos
+            mov dh, 2                
+            mov dl, 26               
             int 10h 
 
-            mov ah, 0Eh             ; config for writing text with color
+            mov ah, 0Eh              
             mov al, '!'
             mov bh, 0
-            mov bl, 20h             ;color of text
+            mov bl, 20h              
             int 10h
 
-            mov ah, 2ch             ; mode to read time
+            mov ah, 2ch              
             int 21h
 
             xor ax, ax
-            mov al, dl      ;dl contains centiseconds
-            mov bl, 2       ;divisor, interval = 2 centiseconds
-            div bl          ;divide current centiseconds to bl
+            mov al, dl       
+            mov bl, 2        
+            div bl           
 
-            cmp ah, 0       ;compare modulo
+            cmp ah, 0        
             je draw_exclamation     
             ret
 
             draw_exclamation:
-                mov ah, 02h             ; position cursor
+                mov ah, 02h              
                 mov bh, 0     
-                mov dh, 2              ;y pos
-                mov dl, 26             ;x pos
+                mov dh, 2               
+                mov dl, 26              
                 int 10h 
 
-                mov ah, 0Eh             ;config for writing text with color
+                mov ah, 0Eh              
                 mov al, ' '
                 mov bh, 0
-                mov bl, 20h             ;color of text
+                mov bl, 20h              
                 int 10h
                 jmp exit_drawenemy
 
@@ -2103,12 +2103,12 @@ org 0100h
     render_enemy endp
 
     move_enemy proc near
-        cmp enemy_state, 1          ;if descending state
+        cmp enemy_state, 1           
         je descending
 
-        ;enemy_state 0, 2
+         
         
-        cmp enemy_state, 3          ;if ascending state
+        cmp enemy_state, 3           
         je ascending
 
         ret
@@ -2120,7 +2120,7 @@ org 0100h
             ret
 
         exit_ascending:
-            mov enemy_state, 0      ;set enemy state to inactive      
+            mov enemy_state, 0       
             ret
 
         descending:
@@ -2130,13 +2130,13 @@ org 0100h
             ret
 
         exit_descending:
-            mov enemy_state, 2      ;set enemy state to active
-            mov icicle_state, 1     ;set icicle_state to tracking
-            mov ah, 2ch             ; mode to read time, int 21
+            mov enemy_state, 2       
+            mov icicle_state, 1      
+            mov ah, 2ch              
             int 21h
 
             mov tempmsecond, dh
-            add tempmsecond, 2      ;add 2 seconds to temporary time
+            add tempmsecond, 2       
             cmp tempmsecond, 59
             jg adjust_tempmsecond
             ret
@@ -2146,13 +2146,13 @@ org 0100h
                 ret
     move_enemy endp
 
-    update_difficulty proc near         ;to be optimized
+    update_difficulty proc near          
         call calculate_overallscore
         mov si, 0 
-        ;score conditions for active obstacle
-        cmp score_overallhex, 20        ;score_overallhex < 20
+         
+        cmp score_overallhex, 20         
         jl lowdiff
-        cmp score_overallhex, 60        ;score_overallhex < 60
+        cmp score_overallhex, 60         
         jl mediumdiff
         cmp score_overallhex, 100
         jl intermediatediff
@@ -2161,8 +2161,8 @@ org 0100h
         jmp extremediff
         exit_updatediff:    ret
         lowdiff:
-            mov .obs_activetemp[si+0], 1        ;active
-            mov .obs_activetemp[si+2], 0        ;inactive
+            mov .obs_activetemp[si+0], 1         
+            mov .obs_activetemp[si+2], 0         
             mov .obs_activetemp[si+4], 0
             mov .obs_activetemp[si+6], 0
             mov .obs_activetemp[si+8], 0
@@ -2197,17 +2197,17 @@ org 0100h
             jmp beginupdate
 
         beginupdate:
-            mov cx, 5                   ; Loop counter for 5 iterations
+            mov cx, 5                    
             
         updateactive:
-            cmp obs_ypos[si], 7         ; Compare obs_ypos[si] with 8
+            cmp obs_ypos[si], 7          
             jne skip_update
             mov ax, .obs_activetemp[si]
-            mov obs_isactive[si], ax    ; Set obs_isactive[si] to .obs_activetemp[si]
+            mov obs_isactive[si], ax     
 
         skip_update:
-            add si, 2                    ; Move to the next pair of positions (si+2)
-            loop updateactive            ; Loop until CX decrements to 0
+            add si, 2                     
+            loop updateactive             
             ret
     update_difficulty endp
 
@@ -2226,16 +2226,16 @@ org 0100h
     	jl exit_adjust
         
         exit_adjust:
-        xor ax, ax          ; reset ax register to 0
+        xor ax, ax           
         mov score_overallhex, ax
         mov al, score_ones
         add score_overallhex, ax
-        xor ax, ax          ; reset ax register to 0
+        xor ax, ax           
         mov al, score_tens
         mov bl, 10
         mul bl
         add score_overallhex, ax
-        xor ax, ax          ; reset ax register to 0
+        xor ax, ax           
         mov al, score_hund
         mov bl, 100
         mul bl
@@ -2297,42 +2297,42 @@ org 0100h
 
         check_interval:
             
-            mov ah, 2ch             ; mode to read time
+            mov ah, 2ch              
             int 21h
             xor ax, ax
-            mov al, dh                  ;dh contains seconds
+            mov al, dh                   
             inc al
-            mov bl, enemy_interval      ;divisor, interval 
-            div bl                      ;divide current seconds to bl
-            cmp ah, 0                   ;compare remainder
+            mov bl, enemy_interval       
+            div bl                       
+            cmp ah, 0                    
             jne exit_updatteenemy             
 
-        update_enemy:                   ;if(icicle_state==0 && enemy_state==0 && ah==0)
+        update_enemy:                    
             mov enemy_state, 1
             ret
     update_enemydifficulty endp
 
-    ; _update_obsXpos must be called after value in randomNum is called to change the obstacles x position
+     
     _update_obsXpos proc near
-        mov al, randomNum           ; 1 to 5
+        mov al, randomNum            
 
-        ;randomNum = 1
+         
         cmp al, 01
         je obs1_position1
         
-        ;randomNum = 2
+         
         cmp al, 02
         je obs1_position2
 
-        ;randomNum = 3
+         
         cmp al, 03
         je obs1_position3
 
-        ;randomNum = 4
+         
         cmp al, 04
         je obs1_position4
 
-        ret                 ;exit if none, will retain previous x position
+        ret                  
 
         obs1_position1:
             mov obs_xpos[si], 135
@@ -2354,25 +2354,25 @@ org 0100h
             ret
     _update_obsXpos endp
 
-    nurng proc      ;to be optimized    linear congruential generator 
-        ;IMPORTANT FOR RNG
+    nurng proc       
+         
         mov ax, rngseed
         mov bx, 0A9h
-        mul bx                ; rngseed * 169 
-        add ax, 1             ; increment rngseed
+        mul bx                 
+        add ax, 1              
         mov rngseed, ax       
-        ;IMPORTANT FOR RNG
+         
 
         xor dx, dx         
-        mov bx, 5          ; 1/5 chance for new num, 2/5 chance for retaining previous num
-        div bx             ; divide AX by BX, quotient in AL, remainder in DL
+        mov bx, 5           
+        div bx              
         inc dl
         mov randomNum, dl
         ret
     nurng endp
 
     generateseed proc near
-        mov ah, 00h                 ; get system time
+        mov ah, 00h                  
         int 1ah
         mov rngseed, dx
         ret
@@ -2384,7 +2384,7 @@ org 0100h
         mov icicley, 8
         mov icicle_state, 0
         mov si, 0
-        ;tower sprite
+         
         mov towery[si+0], 17
         mov towery[si+2], 33
         mov towery[si+4], 49
@@ -2397,12 +2397,12 @@ org 0100h
         mov towery[si+18], 162
         mov towery[si+20], 178
 
-        ;enemy
+         
         mov enemy_state, 0
         mov enemy_y, 8
 
         mov si, 0
-        ;obstacle
+         
         mov obs_ypos[si+0], 23
         mov obs_ypos[si+2], 55
         mov obs_ypos[si+4], 87
@@ -2426,14 +2426,14 @@ org 0100h
     default_gamevalue endp 
 
     gameover_input proc near
-        mov ah, 00h             ; mode to read key input
-        int 16h                 ; execute mode, get the pressed key
-        cmp al, 'r'             ; compare with 's'
-        je gameover_keypress       ; if equal, jump to keypress_detected
-        cmp al, 'R'             ; compare with 'S'
-        je gameover_keypress       ; if equal, jump to keypress_detected
+        mov ah, 00h              
+        int 16h                  
+        cmp al, 'r'              
+        je gameover_keypress        
+        cmp al, 'R'              
+        je gameover_keypress        
 
-        jmp gameover_input          ; if no keys pressed, keep jumping to menu_input
+        jmp gameover_input           
 
         gameover_keypress:
             mov game_state, 0
@@ -2491,46 +2491,46 @@ org 0100h
     render_sideboxover endp
 
     gameover_printtext proc near        
-            ;box
-            mov ah, 02h             ; mode position cursor
+             
+            mov ah, 02h              
             mov bh, 00h     
             mov dh, 02    
             mov dl, 12     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 05fh          ;character to print - solid line
+            mov ah, 09h              
+            mov al, 05fh           
             mov bh, 0          
-            mov bl, 0fh             ;color
+            mov bl, 0fh              
             mov cx, 16
             int 10h
 
-            mov ah, 02h             ; mode position cursor
+            mov ah, 02h              
             mov bh, 00h     
             mov dh, 05    
             mov dl, 12     
             int 10h
-            mov ah, 09h             ;config for writing text with color
-            mov al, 05fh          ;character to print - solid line
+            mov ah, 09h              
+            mov al, 05fh           
             mov bh, 0          
-            mov bl, 0fh             ;color
+            mov bl, 0fh              
             mov cx, 16
             int 10h 
 
-            mov bp, offset line1_over        ;game over...
+            mov bp, offset line1_over         
             mov _stringx, 14
             mov _stringy, 4
             mov _stringcolor, 04h
             mov _stringlength, 12
             call _printtext
 
-            mov bp, offset line2_over        ;score
+            mov bp, offset line2_over         
             mov _stringx, 15
             mov _stringy, 16
             mov _stringcolor, 0fh
             mov _stringlength, 6
             call _printtext
 
-            mov bp, offset line3_over       ;press r
+            mov bp, offset line3_over        
             mov _stringx, 7
             mov _stringy, 21
             mov _stringcolor, 0fh
@@ -2543,7 +2543,7 @@ org 0100h
             call .printscore
 
             call Highscore
-            mov bp, offset line4_over        ;High score
+            mov bp, offset line4_over         
             mov _stringx, 10
             mov _stringy, 18
             mov _stringcolor, 0fh
@@ -2558,13 +2558,13 @@ org 0100h
     gameover_printtext endp
     
     playinggame_printtext proc near
-        mov ah, 02h         ; set to cursor position
-        mov bh, 00h         ;page position
-        mov dh, 04h         ;y position of text -> 1 hexadecimal is equivalent to 8 pixels
-        mov dl, 02h         ;x position of text -> 00h is tile one, 01h is tile two
+        mov ah, 02h          
+        mov bh, 00h          
+        mov dh, 04h          
+        mov dl, 02h          
         int 10h
         mov ah, 09h
-        mov dx, offset line1_game       ;maharlika
+        mov dx, offset line1_game        
         int 21h
 
         mov ah, 02h
@@ -2573,7 +2573,7 @@ org 0100h
         mov dl, 02h
         int 10h
         mov ah, 09h
-        mov dx, offset line2_game       ;ascendance
+        mov dx, offset line2_game        
         int 21h
 
         mov ah, 02h
@@ -2582,7 +2582,7 @@ org 0100h
         mov dl, 02h
         int 10h
         mov ah, 09h
-        mov dx, offset line5_game       ;score
+        mov dx, offset line5_game        
         int 21h
 
         call calculate_overallscore
@@ -2594,46 +2594,46 @@ org 0100h
     playinggame_printtext endp
 
     playinggame_input proc near
-        mov ah, 01h             ;if no key is pressed, exit playinggame_input
+        mov ah, 01h              
         int 16h
-        jz exit_input           ;al
+        jz exit_input            
 
         mov ah, 00h
         int 16h
 
-        ;check if player presses 'w' or 'W'
-        cmp al, 57h ;'W'
+         
+        cmp al, 57h  
         je w_pressed
-        cmp al, 77h ;'w'
+        cmp al, 77h  
         je w_pressed
         
-        ;check if player presses 'a' or 'A'
-        cmp al, 41h ;'A'
+         
+        cmp al, 41h  
         je a_pressed
-        cmp al, 61h ;'a'
+        cmp al, 61h  
         je a_pressed
         
-        ;check if player presses 'd' or 'D'
-        cmp al, 44h ;'D'
+         
+        cmp al, 44h  
         je d_pressed
-        cmp al, 64h ;'d'
+        cmp al, 64h  
         je d_pressed
 
-        ;check if player presses 's' or 'S'
-        cmp al, 53h ;'S'
+         
+        cmp al, 53h  
         je s_pressed
-        cmp al, 73h ;'s'
+        cmp al, 73h  
         je s_pressed
 
-        ;exit if no input
+         
         jmp exit_input
 
         w_pressed:
-            mov ax, y_toplimit      ;check if character y position has reached top_limit
+            mov ax, y_toplimit       
             cmp char_y, ax
-            je exit_input           ;if true then exit
+            je exit_input            
 
-            ;else
+             
             mov ax, char_velocity
             sub char_y, ax
             jmp exit_input
@@ -2641,18 +2641,18 @@ org 0100h
         a_pressed:
             mov ax, char_xfixedpos
             cmp ax, 01h
-            je exit_input           ;exit if xfixedpos is already at 1
+            je exit_input            
 
-            ;else
+             
             dec char_xfixedpos
             jmp exit_input
 
         s_pressed:
-            mov ax, y_bottomlimit   ;check if character y position has reached bottom_limit
+            mov ax, y_bottomlimit    
             cmp char_y, ax 
-            je exit_input           ;if true then exit
+            je exit_input            
 
-            ;else
+             
             mov ax, char_velocity
             add char_y, ax
             jmp exit_input
@@ -2660,27 +2660,27 @@ org 0100h
         d_pressed:
             mov ax, char_xfixedpos
             cmp ax, 04h
-            je exit_input           ;exit if xfixedpos is already at 4
+            je exit_input            
         
-            ;else
+             
             inc char_xfixedpos
             jmp exit_input
         exit_input:
             mov ax, char_xfixedpos
 
-            ;check if 1
+             
             cmp ax, 01h
             je position1
             
-            ;check if 2
+             
             cmp ax, 02h
             je position2
 
-            ;check if 3
+             
             cmp ax, 03h
             je position3
 
-            ;check if 4
+             
             cmp ax, 04h
             je position4
 
@@ -2705,15 +2705,15 @@ org 0100h
     playinggame_input endp
 
     check_collission proc near
-        ;check if char is colliding with obstacle
-        ;char_x+char_size > obstacle_xpos && char_x < obstacle_xpos+char_size 
-        ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
+         
+         
+         
         mov cx, 5
         push si
         mov si, 0
 
         collission_obstacle:
-            cmp obs_isactive[si], 0         ;ignore current obstacle if inactive(0)
+            cmp obs_isactive[si], 0          
             je exit_collissionobstacle
             
             mov ax, char_x
@@ -2736,19 +2736,19 @@ org 0100h
             cmp char_y, ax
             jnl exit_collissionobstacle
 
-            ;if collission is true
-            mov game_state, 2         ;set game state to gameover
+             
+            mov game_state, 2          
             jmp check_state
 
-        ;if false
+         
         exit_collissionobstacle:
             add si, 2
             loop collission_obstacle
             pop si
         
-        ;check if char is colliding with icicle
-        ;char_x+char_size > iciclex && char_x < iciclex+char_size 
-        ;&& char_y+char_size > obstacle_ypos && char_y < obstacle_ypos+char_size 
+         
+         
+         
         collission_icicle:
             cmp icicle_state, 0
             je exit_collission
@@ -2775,143 +2775,143 @@ org 0100h
             cmp char_y, ax
             jnl exit_collission
 
-            ;if collission is true
-            mov game_state, 2         ;set game state to gameover
+             
+            mov game_state, 2          
             jmp check_state
         exit_collission:    ret
     check_collission endp
 
     move_obstacle proc near        
-        ;array addresses: 0, 2, 4, 6, 8
+         
         push si
         mov si, 0
-        mov cx, 5                                   ;set loop to 5
+        mov cx, 5                                    
 
         loophere:
             mov ax, y_velocity
-            add obs_ypos[si], ax                    ;obs_ypos[si] += y_velocity
+            add obs_ypos[si], ax                     
 
             mov ax, y_bottomlimit
             add ax, 12
-            cmp obs_ypos[si], ax                    ;compare obx_ypos[si] to bottom limit
-            jg returntop_obstacle                   ;if obs_ypos[si] < y_bottomlimit is true                    
+            cmp obs_ypos[si], ax                     
+            jg returntop_obstacle                    
 
             add si, 2
-            loop loophere                           ;loop until cx is 0
+            loop loophere                            
             pop si
             ret
 
         returntop_obstacle:
-            mov allowscore, 1                       ;will allow scoring until one obstacle has passed
+            mov allowscore, 1                        
             
             mov ax, 7
-            mov obs_ypos[si], ax                ;mov obx_ypos[si] back to top
+            mov obs_ypos[si], ax                     
 
-            call nurng                          ; randomNum = 1 to 5
+            call nurng                               
             call _update_obsXpos
             add si, 2
-            loop loophere                           ;loop until cx is 0
+            loop loophere                            
             pop si
 
             ret
     move_obstacle endp
 
     render_obstacle proc 
-        ;obstacle 1
+         
         render_obstacle1:
-            mov _rendersizeX, 18            ;x size
-            mov _rendersizeY, 17            ;y size
+            mov _rendersizeX, 18             
+            mov _rendersizeY, 17             
             mov si, offset obs_isactive
             mov ax, [si+0]
             cmp ax, 0
             je render_obstacle2
             mov si, offset obs_xpos
             mov ax, [si+0]
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov si, offset obs_ypos
             mov ax, [si+0]
             inc ax
-            mov rendercoordY, ax             ;y coord
+            mov rendercoordY, ax              
             mov si, 0
             call check_leftright
             call _rendersprite
             jmp render_obstacle2
 
-        ;obstacle 2
+         
         render_obstacle2:
-            mov _rendersizeX, 18            ;x size
-            mov _rendersizeY, 17            ;y size
+            mov _rendersizeX, 18             
+            mov _rendersizeY, 17             
             mov si, offset obs_isactive
             mov ax, [si+2]
             cmp ax, 0
             je render_obstacle3
             mov si, offset obs_xpos
             mov ax, [si+2]
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov si, offset obs_ypos
             mov ax, [si+2]
             inc ax
-            mov rendercoordY, ax             ;y coord
+            mov rendercoordY, ax              
             mov si, 2
             call check_leftright
             call _rendersprite
             jmp render_obstacle3
 
-        ;obstacle 3
+         
         render_obstacle3:
-            mov _rendersizeX, 18            ;x size
-            mov _rendersizeY, 17            ;y size
+            mov _rendersizeX, 18             
+            mov _rendersizeY, 17             
             mov si, offset obs_isactive
             mov ax, [si+4]
             cmp ax, 0
             je render_obstacle4
             mov si, offset obs_xpos
             mov ax, [si+4]
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov si, offset obs_ypos
             mov ax, [si+4]
             inc ax
-            mov rendercoordY, ax             ;y coord
+            mov rendercoordY, ax              
             mov si, 4
             call check_leftright
             call _rendersprite
             jmp render_obstacle4
 
-        ;obstacle 4
+         
         render_obstacle4:
-            mov _rendersizeX, 18            ;x size
-            mov _rendersizeY, 17            ;y size
+            mov _rendersizeX, 18             
+            mov _rendersizeY, 17             
             mov si, offset obs_isactive
             mov ax, [si+6]
             cmp ax, 0
             je render_obstacle5
             mov si, offset obs_xpos
             mov ax, [si+6]
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov si, offset obs_ypos
             mov ax, [si+6]
             inc ax
-            mov rendercoordY, ax             ;y coord
+            mov rendercoordY, ax              
             mov si, 6
             call check_leftright
             call _rendersprite
             jmp render_obstacle5
 
-        ;obstacle 5
+         
         render_obstacle5:
-            mov _rendersizeX, 18            ;x size
-            mov _rendersizeY, 17            ;y size
+            mov _rendersizeX, 18             
+            mov _rendersizeY, 17             
             mov si, offset obs_isactive
             mov ax, [si+8]
             cmp ax, 0
             je exit_renderobstacle
             mov si, offset obs_xpos
             mov ax, [si+8]
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov si, offset obs_ypos
             mov ax, [si+8]
             inc ax
-            mov rendercoordY, ax             ;y coord
+            mov rendercoordY, ax              
             mov si, 8
             call check_leftright
             call _rendersprite
@@ -2931,27 +2931,27 @@ org 0100h
             je render_obsright
 
         render_obsleft:
-            mov si, offset obstacle_left            ;tileset array, will refer for color to print
+            mov si, offset obstacle_left             
             ret
 
         render_obsright:
-            mov si, offset obstacle_right           ;tileset array, will refer for color to print
+            mov si, offset obstacle_right            
             ret
 
         exit_renderobstacle:    ret
     render_obstacle endp
    
-        ;this is declared before calling _rendersprite
-        ;example syntax
-        ;mov si, offset player           ;tileset array, will refer for color to print
-        ;mov rendercoordX, 0             ;x coord
-        ;mov rendercoordY, 0             ;y coord
-        ;mov _rendersizeX, 16            ;x size
-        ;mov _rendersizeY, 16            ;y size
-        ;call _rendersprite
-        ;this is declared before calling _rendersprite
+         
+         
+         
+         
+         
+         
+         
+         
+         
 
-    _rendersprite proc near         ;cx = x coord, dx = y coord, si = tileset(ie. tower, obstacle), _rendersizeX, _rendersizeY, renderX, renderY
+    _rendersprite proc near          
         push ax
         push bx
         push cx
@@ -2962,28 +2962,28 @@ org 0100h
         mov dx, rendercoordY
         dec dx
         render_horizontal:
-            ;horizontal render
-            mov ah, 0ch                 ;set config to write pixels
-            mov al, [si]                ;tile color as per address
-            mov bh, 00h                 ;page number
-            int 10h                     ;execute
+             
+            mov ah, 0ch                  
+            mov al, [si]                 
+            mov bh, 00h                  
+            int 10h                      
 
             inc cx
-            inc si                          ;change pixel color 
+            inc si                           
             mov ax, cx
             sub ax, rendercoordX
             cmp ax, _rendersizeX
-            jng render_horizontal       ; if !(currentxcoord - rendercoordX < _rendersizeX),
-                                        ; goto render_horizontal, else continue to next line
-            ;vertical render
+            jng render_horizontal        
+                                         
+             
             mov cx, rendercoordX
             inc dx
             inc si
             mov ax, dx 
             sub ax, rendercoordY
             cmp ax, _rendersizeY
-            jng render_horizontal       ; if !(currentycoord - rendercoordY < _rendersizeY),
-                                        ; goto render_horizontal, else exit subroutine
+            jng render_horizontal        
+                                         
             pop ax
             pop bx
             pop cx
@@ -2991,13 +2991,13 @@ org 0100h
             ret
     _rendersprite endp
 
-        ; syntax
-        ; mov bp, offset daString
-        ; mov _stringx, 2               ; x position of string
-        ; mov _stringy, 2               ; y position of string
-        ; mov bl, _stringcolor
-        ; mov _stringlength, 5
-        ; call _printtext
+         
+         
+         
+         
+         
+         
+         
 
     _printtext proc
         mov  ax, ds
@@ -3007,7 +3007,7 @@ org 0100h
         mov bl, _stringcolor
         mov cx, _stringlength
         mov ax, 1301h   
-        mov bh, 00h   ;page
+        mov bh, 00h    
         int 10h
         mov bp, 0
         ret 
@@ -3025,24 +3025,24 @@ org 0100h
         je render_rightchar
 
         render_leftchar:
-            mov si, offset Player_left       ;tileset array, will refer for color to print
+            mov si, offset Player_left        
             mov ax, char_x
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov ax, char_y
             inc ax
-            mov rendercoordY, ax             ;y coord
-            mov _rendersizeX, 17             ;x size
-            mov _rendersizeY, 17             ;y size
+            mov rendercoordY, ax              
+            mov _rendersizeX, 17              
+            mov _rendersizeY, 17              
             call _rendersprite
             ret
 
         render_rightchar:
-            mov si, offset Player_right       ;tileset array, will refer for color to print
+            mov si, offset Player_right        
             mov ax, char_x
-            mov rendercoordX, ax             ;x coord
+            mov rendercoordX, ax              
             mov ax, char_y
-            mov rendercoordY, ax             ;y coord
-            mov _rendersizeX, 17             ;x size
+            mov rendercoordY, ax              
+            mov _rendersizeX, 17              
             mov _rendersizeY, 17
             call _rendersprite
             ret
@@ -3071,16 +3071,16 @@ org 0100h
     increment_score endp
 
     Highscore proc 
-        xor ax, ax          ; reset ax register to 0
+        xor ax, ax           
         mov .highscore, ax
         mov al, tempscore[si+0]
         add .highscore, ax
-        xor ax, ax          ; reset ax register to 0
+        xor ax, ax           
         mov al, tempscore[si+1]
         mov bl, 10
         mul bl
         add .highscore, ax
-        xor ax, ax          ; reset ax register to 0
+        xor ax, ax           
         mov al, tempscore[si+2]
         mov bl, 100
         mul bl
@@ -3093,11 +3093,11 @@ org 0100h
 
         set_high:
             mov al, score_ones
-            mov tempscore[si], al   ; Set score_ones to the first word in tempscore
+            mov tempscore[si], al    
             mov al, score_tens
-            mov tempscore[si+1], al ; Set score_tens to the second word in tempscore
+            mov tempscore[si+1], al  
             mov al, score_hund
-            mov tempscore[si+2], al ; Set score_hund to the third word in tempscore
+            mov tempscore[si+2], al  
             jmp exit_high
             
 
@@ -3107,31 +3107,31 @@ org 0100h
     printhigh proc
         mov si, 0
         mov ah, 02h
-        mov dh, 18     ;y pos
-        mov dl, 21     ; x pos
+        mov dh, 18      
+        mov dl, 21      
         int 10h
 
-        ; print hundreds digit
+         
     	push dx
         mov dl, tempscore[si+2]
     	add dl, '0'
     	int 21h
         pop dx
 
-    	inc dl              ; move to next square
+    	inc dl               
    	    int 10h
         
-        ; print tens digit
+         
     	push dx
         mov dl, tempscore[si+1]
     	add dl, '0'
     	int 21h
         pop dx
 
-    	inc dl              ; move to next square
+    	inc dl               
     	int 10h
 
-        ; print ones digit
+         
 
     	push dx
         mov dl, tempscore[si+0]
@@ -3143,32 +3143,32 @@ org 0100h
 
         printhigh endp
 
-    .printscore proc near    ;dl - x position
-        ; the string 'Score: ' occupies 7 squares incl. whitespace
-        add dl, 7       ;set x pos 7 squares apart from previous' text initial letter
+    .printscore proc near     
+         
+        add dl, 7        
         int 10h
 
-        ; print hundreds digit
+         
     	push dx
         mov dl, score_hund
     	add dl, '0'
     	int 21h
         pop dx
 
-    	inc dl              ; move to next square
+    	inc dl               
    	    int 10h
         
-        ; print tens digit
+         
     	push dx
         mov dl, score_tens
     	add dl, '0'
     	int 21h
         pop dx
 
-    	inc dl              ; move to next square
+    	inc dl               
     	int 10h
 
-        ; print ones digit
+         
     	push dx
         mov dl, score_ones
     	add dl, '0'
@@ -3179,9 +3179,9 @@ org 0100h
     .printscore endp
 
     clear_screen proc near
-        mov ah, 00h         ;config to video mode
-        mov al, 13h         ;set to video mode 320x200
-        int 10h             ;execute
+        mov ah, 00h          
+        mov al, 13h          
+        int 10h              
 
         mov ah, 0bh
         mov bh, 00h
