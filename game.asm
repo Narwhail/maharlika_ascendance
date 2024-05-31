@@ -475,23 +475,23 @@ org 0100h
         mov ax, @data
         mov ds, ax
 
-        call generateseed
+        call generateseed           ; used mostly for rng
         call default_gamevalue
         call clear_screen
 
-        mov ah, 2ch                     ;READ TIME
-        int 21h                         ;USE DH = SECONDS, DL = 1/100 SECONDS
+        mov ah, 2ch                     ; Mode to read time
+        int 21h     ;Returns DH = SECONDS, DL = 1/100 SECONDS
         mov prevtime, dh                ;initialize for check_tick
 
         check_state:
             cmp game_state, 0           ;if(game_state == 0)
-            je menu_screen
+            je menu_screen              ;if true
             cmp game_state, 1           ;if(game_state == 1)
-            je playing_game
+            je playing_game             ;if true            
             cmp game_state, 2           ;if(game_state == 2)
-            je game_over
+            je game_over                ;if true
             cmp game_state, 3           ;if(game_state == 3)
-            je tutorial_screen
+            je tutorial_screen          ;if true
 
         menu_screen:
             call clear_screen
@@ -505,7 +505,7 @@ org 0100h
             call check_tick
             call update_difficulty
             call clear_screen
-            call playinggame_input
+            call playinggame_input          
             call move_tower
             call move_obstacle
             call move_enemy
@@ -641,7 +641,7 @@ org 0100h
         cmp coin_state, 0
         jne exit_update_coinactive
         
-        mov ah, 2ch
+        mov ah, 2ch                 ; mode to read time
         int 21h
         xor ax, ax
         mov al, dh                  ;dh contains seconds
@@ -797,7 +797,7 @@ org 0100h
     move_coin endp
 
     render_chardeathanimation proc near
-        mov ah, 2ch
+        mov ah, 2ch             ; mode to read time
         int 21h
 
         mov tempmsecond, dh
@@ -820,7 +820,7 @@ org 0100h
             je render_rightchardeath
 
         render_leftchardeath:
-            mov ah, 2ch
+            mov ah, 2ch             ; mode to read time
             int 21h
             xor ax, ax
             mov al, dh      ;dh contains seconds
@@ -853,7 +853,7 @@ org 0100h
                 jmp check_renderdeathtime
 
         render_rightchardeath:
-            mov ah, 2ch
+            mov ah, 2ch             ; mode to read time
             int 21h
             xor ax, ax
             mov al, dh      ;dh contains seconds
@@ -886,7 +886,7 @@ org 0100h
                 jmp check_renderdeathtime
 
         check_renderdeathtime:
-            mov ah, 2ch
+            mov ah, 2ch             ; mode to read time
             int 21h
             cmp tempmsecond, dh              
             je exit_renderdeath
@@ -1822,7 +1822,7 @@ org 0100h
         exit_rendericicle:  ret
     render_icicle endp
 
-    move_icicle proc near
+    move_icicle proc near   ;0 inactive, 1 tracking, 2 active
         cmp icicle_state, 1             ; if icicle_state = 1(activating), copy char_x+4 to iciclex.
         je icicle_tracking
 
@@ -1847,7 +1847,7 @@ org 0100h
             mov ax, icicle_velocity
             add icicley, ax             ;icicley += icicle_velocity
 
-            mov ax, y_bottomlimit
+            mov ax, y_bottomlimit       ;y_bottomlimit+16
             add ax, 16
             cmp icicley, ax
             jle exit_moveicicle         ;if(icicley <= y_bottomlimit+16), exit
@@ -2015,7 +2015,7 @@ org 0100h
         mov ah, 2ch
         int 21h                 ; DH = seconds, dl = centiseconds
 
-        cmp dl, current_tick
+        cmp dl, current_tick        ; current == dl
         jne changetick
         jmp check_state
 
@@ -2050,7 +2050,7 @@ org 0100h
                                         ;else jump to exit_drawenemy
 
         ; if(enemy_state == 2 && tempmsecond == dh)
-        mov ah, 2ch
+        mov ah, 2ch                     ; mode to read time
         int 21h
         cmp tempmsecond, dh              
         jne exclamation                 
@@ -2059,19 +2059,19 @@ org 0100h
         mov enemy_state, 3
 
         exclamation:
-            mov ah, 02h     
+            mov ah, 02h                 ; mode to position cursor
             mov bh, 0     
             mov dh, 2               ;y pos
             mov dl, 26              ;x pos
             int 10h 
 
-            mov ah, 0Eh             ;config for writing text with color
+            mov ah, 0Eh             ; config for writing text with color
             mov al, '!'
             mov bh, 0
             mov bl, 20h             ;color of text
             int 10h
 
-            mov ah, 2ch
+            mov ah, 2ch             ; mode to read time
             int 21h
 
             xor ax, ax
@@ -2084,7 +2084,7 @@ org 0100h
             ret
 
             draw_exclamation:
-                mov ah, 02h     
+                mov ah, 02h             ; position cursor
                 mov bh, 0     
                 mov dh, 2              ;y pos
                 mov dl, 26             ;x pos
@@ -2105,6 +2105,8 @@ org 0100h
     move_enemy proc near
         cmp enemy_state, 1          ;if descending state
         je descending
+
+        ;enemy_state 0, 2
         
         cmp enemy_state, 3          ;if ascending state
         je ascending
@@ -2130,7 +2132,7 @@ org 0100h
         exit_descending:
             mov enemy_state, 2      ;set enemy state to active
             mov icicle_state, 1     ;set icicle_state to tracking
-            mov ah, 2ch
+            mov ah, 2ch             ; mode to read time, int 21
             int 21h
 
             mov tempmsecond, dh
@@ -2148,9 +2150,9 @@ org 0100h
         call calculate_overallscore
         mov si, 0 
         ;score conditions for active obstacle
-        cmp score_overallhex, 20
+        cmp score_overallhex, 20        ;score_overallhex < 20
         jl lowdiff
-        cmp score_overallhex, 60
+        cmp score_overallhex, 60        ;score_overallhex < 60
         jl mediumdiff
         cmp score_overallhex, 100
         jl intermediatediff
@@ -2159,8 +2161,8 @@ org 0100h
         jmp extremediff
         exit_updatediff:    ret
         lowdiff:
-            mov .obs_activetemp[si+0], 1
-            mov .obs_activetemp[si+2], 0
+            mov .obs_activetemp[si+0], 1        ;active
+            mov .obs_activetemp[si+2], 0        ;inactive
             mov .obs_activetemp[si+4], 0
             mov .obs_activetemp[si+6], 0
             mov .obs_activetemp[si+8], 0
@@ -2206,8 +2208,6 @@ org 0100h
         skip_update:
             add si, 2                    ; Move to the next pair of positions (si+2)
             loop updateactive            ; Loop until CX decrements to 0
-
-        
             ret
     update_difficulty endp
 
@@ -2297,7 +2297,7 @@ org 0100h
 
         check_interval:
             
-            mov ah, 2ch
+            mov ah, 2ch             ; mode to read time
             int 21h
             xor ax, ax
             mov al, dh                  ;dh contains seconds
@@ -2314,7 +2314,7 @@ org 0100h
 
     ; _update_obsXpos must be called after value in randomNum is called to change the obstacles x position
     _update_obsXpos proc near
-        mov al, randomNum
+        mov al, randomNum           ; 1 to 5
 
         ;randomNum = 1
         cmp al, 01
@@ -2372,7 +2372,7 @@ org 0100h
     nurng endp
 
     generateseed proc near
-        mov ah, 00h                 ;get system time
+        mov ah, 00h                 ; get system time
         int 1ah
         mov rngseed, dx
         ret
@@ -2426,8 +2426,8 @@ org 0100h
     default_gamevalue endp 
 
     gameover_input proc near
-        mov ah, 00h
-        int 16h                 ; get the pressed key
+        mov ah, 00h             ; mode to read key input
+        int 16h                 ; execute mode, get the pressed key
         cmp al, 'r'             ; compare with 's'
         je gameover_keypress       ; if equal, jump to keypress_detected
         cmp al, 'R'             ; compare with 'S'
@@ -2492,7 +2492,7 @@ org 0100h
 
     gameover_printtext proc near        
             ;box
-            mov ah, 02h     
+            mov ah, 02h             ; mode position cursor
             mov bh, 00h     
             mov dh, 02    
             mov dl, 12     
@@ -2504,7 +2504,7 @@ org 0100h
             mov cx, 16
             int 10h
 
-            mov ah, 02h     
+            mov ah, 02h             ; mode position cursor
             mov bh, 00h     
             mov dh, 05    
             mov dl, 12     
@@ -2558,7 +2558,7 @@ org 0100h
     gameover_printtext endp
     
     playinggame_printtext proc near
-        mov ah, 02h
+        mov ah, 02h         ; set to cursor position
         mov bh, 00h         ;page position
         mov dh, 04h         ;y position of text -> 1 hexadecimal is equivalent to 8 pixels
         mov dl, 02h         ;x position of text -> 00h is tile one, 01h is tile two
@@ -2596,7 +2596,7 @@ org 0100h
     playinggame_input proc near
         mov ah, 01h             ;if no key is pressed, exit playinggame_input
         int 16h
-        jz exit_input
+        jz exit_input           ;al
 
         mov ah, 00h
         int 16h
@@ -2804,10 +2804,10 @@ org 0100h
         returntop_obstacle:
             mov allowscore, 1                       ;will allow scoring until one obstacle has passed
             
-            mov ax, 0007h
+            mov ax, 7
             mov obs_ypos[si], ax                ;mov obx_ypos[si] back to top
 
-            call nurng
+            call nurng                          ; randomNum = 1 to 5
             call _update_obsXpos
             add si, 2
             loop loophere                           ;loop until cx is 0
@@ -2969,7 +2969,7 @@ org 0100h
             int 10h                     ;execute
 
             inc cx
-            inc si
+            inc si                          ;change pixel color 
             mov ax, cx
             sub ax, rendercoordX
             cmp ax, _rendersizeX
@@ -3180,7 +3180,7 @@ org 0100h
 
     clear_screen proc near
         mov ah, 00h         ;config to video mode
-        mov al, 13h         ;set to video mode 320x300
+        mov al, 13h         ;set to video mode 320x200
         int 10h             ;execute
 
         mov ah, 0bh
